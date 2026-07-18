@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main, "feature/**"]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install API
+        run: uv sync --project apps/api --dev
+      - name: Ruff
+        run: uv run --project apps/api ruff check apps packages
+      - name: Pytest
+        run: uv run --project apps/api pytest apps/api/tests packages
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install
+        run: pnpm install --no-frozen-lockfile
+      - name: Typecheck and build
+        run: pnpm --filter quantresearch-web build
+      - name: Unit tests
+        run: pnpm --filter quantresearch-web test
+
+  infra:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate docker compose config
+        run: docker compose config
+      - uses: hashicorp/setup-terraform@v3
+      - name: Terraform format check
+        working-directory: infra/terraform/azure
+        run: terraform fmt -check

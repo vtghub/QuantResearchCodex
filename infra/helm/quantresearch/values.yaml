@@ -1,0 +1,21 @@
+image:
+  apiRepository: ghcr.io/vtghub/quantresearchcodex-api
+  webRepository: ghcr.io/vtghub/quantresearchcodex-web
+  tag: latest
+
+api:
+  replicas: 1
+  liveTradingEnabled: false
+
+web:
+  replicas: 1
+
+postgres:
+  enabled: false
+
+redis:
+  enabled: false
+
+objectStorage:
+  endpoint: ""
+  bucket: quantresearch

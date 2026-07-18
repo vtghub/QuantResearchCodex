@@ -1,0 +1,20 @@
+[project]
+name = "quantresearch-adapters"
+version = "0.1.0"
+description = "Free-first data and broker adapter scaffolds for QuantResearchCodex."
+requires-python = ">=3.12"
+dependencies = ["quantresearch-core"]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3",
+  "ruff>=0.6",
+  "mypy>=1.11"
+]
+
+[tool.uv.sources]
+quantresearch-core = { path = "../quant_core", editable = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

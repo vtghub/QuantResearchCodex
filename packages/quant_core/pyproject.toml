@@ -1,0 +1,17 @@
+[project]
+name = "quantresearch-core"
+version = "0.1.0"
+description = "Core contracts and domain types for QuantResearchCodex."
+requires-python = ">=3.12"
+dependencies = ["pydantic>=2.8"]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3",
+  "ruff>=0.6",
+  "mypy>=1.11"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

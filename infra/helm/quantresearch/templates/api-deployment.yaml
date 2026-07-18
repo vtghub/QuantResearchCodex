@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quantresearch-api
+spec:
+  replicas: {{ .Values.api.replicas }}
+  selector:
+    matchLabels:
+      app: quantresearch-api
+  template:
+    metadata:
+      labels:
+        app: quantresearch-api
+    spec:
+      containers:
+        - name: api
+          image: "{{ .Values.image.apiRepository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 8000
+          env:
+            - name: QUANTRESEARCH_LIVE_TRADING_ENABLED
+              value: "{{ .Values.api.liveTradingEnabled }}"
