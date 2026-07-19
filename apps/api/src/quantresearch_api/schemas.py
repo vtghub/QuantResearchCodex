@@ -145,3 +145,49 @@ class BrokerOrderResponse(BaseModel):
     status: str
     estimated_notional: float
     gates: list[str]
+
+
+class RiskPolicySummary(BaseModel):
+    tenant_id: UUID
+    name: str
+    status: str
+    scope: str
+    description: str
+
+
+class KillSwitchRequest(BaseModel):
+    enabled: bool
+    reason: str = Field(min_length=8, max_length=512)
+
+
+class KillSwitchState(BaseModel):
+    tenant_id: UUID
+    enabled: bool = False
+    reason: str = "default-clear"
+    updated_by: str = "system"
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+
+class ApprovalRequest(BaseModel):
+    target_kind: ResourceKind
+    target_id: UUID
+    reason: str = Field(min_length=8, max_length=512)
+
+
+class ApprovalRecord(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
+    tenant_id: UUID
+    workspace_id: UUID
+    target_kind: ResourceKind
+    target_id: UUID
+    requested_by: str
+    reason: str
+    status: str = "pending"
+    approved_by: list[str] = Field(default_factory=list)
+    requested_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    decided_at: datetime | None = None
+
+
+class ApprovalDecisionResponse(BaseModel):
+    record: ApprovalRecord
+    gates: list[str]

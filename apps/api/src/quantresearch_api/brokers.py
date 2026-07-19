@@ -5,6 +5,7 @@ from quantresearch_adapters.brokers import (
 )
 from quantresearch_core.contracts import AssetClass, BrokerMode, Instrument, OrderIntent
 
+from quantresearch_api.risk import risk_control_service
 from quantresearch_api.schemas import BrokerOrderRequest, BrokerOrderResponse, TenantContext
 from quantresearch_api.settings import Settings
 
@@ -38,7 +39,10 @@ class BrokerSandboxService:
             replayed.gates = [*replayed.gates, "idempotency-replay"]
             return replayed
 
-        gates = self._evaluate_gates(request, settings)
+        gates = [
+            *risk_control_service.ensure_execution_allowed(context),
+            *self._evaluate_gates(request, settings),
+        ]
         intent = self._build_intent(request, context)
         try:
             broker_result = await adapter.submit_order(intent)

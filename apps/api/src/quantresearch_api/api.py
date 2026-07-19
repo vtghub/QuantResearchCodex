@@ -1,11 +1,16 @@
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
 from quantresearch_api.auth import auth_service, issue_token
 from quantresearch_api.brokers import BrokerSandboxGateError, broker_sandbox_service
 from quantresearch_api.jobs import JobKind, JobRecord, job_queue
+from quantresearch_api.risk import RiskGateError, risk_control_service
 from quantresearch_api.schemas import (
+    ApprovalDecisionResponse,
+    ApprovalRecord,
+    ApprovalRequest,
     AuditRecord,
     AuthProvider,
     AuthTokenResponse,
@@ -17,10 +22,13 @@ from quantresearch_api.schemas import (
     EnqueueIngestionRequest,
     EnqueueResearchRequest,
     HealthResponse,
+    KillSwitchRequest,
+    KillSwitchState,
     LoginRequest,
     RegisterUserRequest,
     ResourceKind,
     ResourceSummary,
+    RiskPolicySummary,
     StrategySummary,
     TenantContext,
 )
@@ -213,11 +221,58 @@ async def submit_paper_order(
         )
     except BrokerSandboxGateError as exc:
         raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+    except RiskGateError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
 
 
 @v1_router.get("/risk/events", response_model=list[ResourceSummary])
 async def risk_events(context: ReadTenantDep) -> list[ResourceSummary]:
     return [_resource(context, ResourceKind.RISK_EVENT, "No active breaches", "clear")]
+
+
+@v1_router.get("/risk/policies", response_model=list[RiskPolicySummary])
+async def risk_policies(context: ReadTenantDep) -> list[RiskPolicySummary]:
+    return risk_control_service.policies(context)
+
+
+@v1_router.get("/risk/kill-switch", response_model=KillSwitchState)
+async def risk_kill_switch(context: ReadTenantDep) -> KillSwitchState:
+    return risk_control_service.kill_switch(context)
+
+
+@v1_router.post("/risk/kill-switch", response_model=KillSwitchState)
+async def set_risk_kill_switch(
+    request: KillSwitchRequest,
+    context: TraderTenantDep,
+) -> KillSwitchState:
+    return risk_control_service.set_kill_switch(request, context)
+
+
+@v1_router.get("/risk/approvals", response_model=list[ApprovalRecord])
+async def risk_approvals(context: ReadTenantDep) -> list[ApprovalRecord]:
+    return risk_control_service.approvals(context)
+
+
+@v1_router.post("/risk/approvals", response_model=ApprovalRecord, status_code=201)
+async def request_risk_approval(
+    request: ApprovalRequest,
+    context: TraderTenantDep,
+) -> ApprovalRecord:
+    return risk_control_service.request_approval(request, context)
+
+
+@v1_router.post(
+    "/risk/approvals/{approval_id}/approve",
+    response_model=ApprovalDecisionResponse,
+)
+async def approve_risk_request(
+    approval_id: UUID,
+    context: AdminTenantDep,
+) -> ApprovalDecisionResponse:
+    try:
+        return risk_control_service.approve(approval_id, context)
+    except RiskGateError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
 
 
 @v1_router.get("/audit/records", response_model=list[AuditRecord])

@@ -4,7 +4,7 @@
 
 - Repository began empty on `main`.
 - Git remote `origin` is `https://github.com/vtghub/QuantResearchCodex`.
-- Implementation work is on `feature/paper-trading-gates`.
+- Implementation work is on `feature/risk-approval-gates`.
 - The approved Terra plan is in `docs/IMPLEMENTATION_PLAN.md`.
 - First scaffold milestone has been implemented and locally verified.
 - The first web UI navigation feature slice is implemented and locally verified.
@@ -16,6 +16,7 @@
 - Auth/RBAC request-context enforcement is implemented and locally verified.
 - Persistent local accounts and OIDC/OAuth hooks are implemented and locally verified.
 - Paper-trading broker sandbox gates are implemented and locally verified.
+- Risk policy approvals and tenant kill-switch state are implemented and locally verified.
 
 ## Locked Decisions
 
@@ -45,7 +46,7 @@
 
 ## Next Milestone
 
-- Add risk policy approvals, tenant kill-switch state, and execution approval workflow.
+- Add durable worker state and queue coordination backed by Redis/Postgres.
 
 ## Change Log
 
@@ -63,3 +64,4 @@
 - 2026-07-18: Implemented auth/RBAC foundation with role-gated API dependencies, stable default tenant/workspace context, route-level permission tests, and regenerated OpenAPI schema.
 - 2026-07-19: Implemented persistent local account hooks with hashed passwords, signed bearer tokens, seeded admin login, OIDC/OAuth provider discovery hooks, tests, and regenerated OpenAPI schema.
 - 2026-07-19: Implemented paper-trading broker sandbox gates with trader/admin-only order submission, paper-only enforcement, notional caps, idempotency replay, Alpaca/IBKR adapter routing, tests, and regenerated OpenAPI schema.
+- 2026-07-19: Implemented risk controls with tenant-scoped policy summaries, mutable kill-switch state, broker kill-switch enforcement, two-person approval requests/decisions, tests, and regenerated OpenAPI schema.
