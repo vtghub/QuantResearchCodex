@@ -16,6 +16,7 @@ from quantresearch_api.schemas import (
     EquityEtfSymbolResult,
     ExperimentDataProfile,
     ExperimentDecision,
+    ExperimentRawBar,
     ExperimentStep,
     PortfolioAllocation,
     TenantContext,
@@ -33,6 +34,7 @@ class EquityEtfResearchService:
     ) -> EquityEtfResearchResponse:
         symbol_results: list[EquityEtfSymbolResult] = []
         data_profile: list[ExperimentDataProfile] = []
+        raw_bars: list[ExperimentRawBar] = []
         returns_by_symbol: dict[str, list[float]] = {}
         latest_signals: dict[str, float] = {}
         vendors_used: set[str] = set()
@@ -62,6 +64,19 @@ class EquityEtfResearchService:
             returns_by_symbol[symbol.upper()] = returns
             latest_signals[symbol.upper()] = latest_signal
             vendors_used.add(vendor)
+            raw_bars.extend(
+                ExperimentRawBar(
+                    symbol=str(bar["symbol"]),
+                    date=str(bar["date"]),
+                    open=float(bar["open"]),
+                    high=float(bar["high"]),
+                    low=float(bar["low"]),
+                    close=float(bar["close"]),
+                    volume=int(bar["volume"]),
+                    vendor=vendor,
+                )
+                for bar in bars
+            )
             data_profile.append(
                 ExperimentDataProfile(
                     symbol=symbol.upper(),
@@ -121,6 +136,7 @@ class EquityEtfResearchService:
                 "slow_window": request.slow_window,
             },
             data_profile=data_profile,
+            raw_bars=raw_bars,
             steps=self._steps(request),
             decisions=self._decisions(sorted(vendors_used), portfolio.cash_weight),
             symbols_result=symbol_results,

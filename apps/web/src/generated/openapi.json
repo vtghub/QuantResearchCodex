@@ -927,6 +927,13 @@
             "title": "Mining Summary",
             "type": "object"
           },
+          "raw_bars": {
+            "items": {
+              "$ref": "#/components/schemas/ExperimentRawBar"
+            },
+            "title": "Raw Bars",
+            "type": "array"
+          },
           "steps": {
             "items": {
               "$ref": "#/components/schemas/ExperimentStep"
@@ -968,6 +975,7 @@
           "dataset_checksum",
           "mining_summary",
           "data_profile",
+          "raw_bars",
           "steps",
           "decisions",
           "symbols_result",
@@ -1119,6 +1127,54 @@
           "rationale"
         ],
         "title": "ExperimentDecision",
+        "type": "object"
+      },
+      "ExperimentRawBar": {
+        "properties": {
+          "close": {
+            "title": "Close",
+            "type": "number"
+          },
+          "date": {
+            "title": "Date",
+            "type": "string"
+          },
+          "high": {
+            "title": "High",
+            "type": "number"
+          },
+          "low": {
+            "title": "Low",
+            "type": "number"
+          },
+          "open": {
+            "title": "Open",
+            "type": "number"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "vendor": {
+            "title": "Vendor",
+            "type": "string"
+          },
+          "volume": {
+            "title": "Volume",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "symbol",
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume",
+          "vendor"
+        ],
+        "title": "ExperimentRawBar",
         "type": "object"
       },
       "ExperimentStep": {

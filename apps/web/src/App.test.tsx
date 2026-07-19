@@ -63,6 +63,18 @@ describe("App", () => {
                 latest_close: 586.2
               }
             ],
+            raw_bars: [
+              {
+                symbol: "SPY",
+                date: "2024-01-02",
+                open: 580,
+                high: 588,
+                low: 579,
+                close: 586.2,
+                volume: 1000000,
+                vendor: "yahoo-finance-compatible"
+              }
+            ],
             steps: [
               {
                 order: 1,
@@ -122,11 +134,14 @@ describe("App", () => {
 
     expect(await screen.findByText("Vendor: yahoo-finance-compatible")).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Data used" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Complete raw data used" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Steps followed" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Decisions made" })).toBeTruthy();
     expect(screen.getByText("Fetch market data")).toBeTruthy();
     expect(screen.getByText("Fallback returned usable bars.")).toBeTruthy();
     expect(screen.getAllByText("586.20").length).toBeGreaterThan(1);
+    expect(screen.getByText("2024-01-02")).toBeTruthy();
+    expect(screen.getByText("1,000,000")).toBeTruthy();
     expect(screen.getByText("100.00%")).toBeTruthy();
   });
 

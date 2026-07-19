@@ -307,6 +307,17 @@ class ExperimentDataProfile(BaseModel):
     latest_close: float
 
 
+class ExperimentRawBar(BaseModel):
+    symbol: str
+    date: str
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: int
+    vendor: str
+
+
 class ExperimentStep(BaseModel):
     order: int
     name: str
@@ -330,6 +341,7 @@ class EquityEtfResearchResponse(BaseModel):
     dataset_checksum: str
     mining_summary: dict[str, str | int]
     data_profile: list[ExperimentDataProfile]
+    raw_bars: list[ExperimentRawBar]
     steps: list[ExperimentStep]
     decisions: list[ExperimentDecision]
     symbols_result: list[EquityEtfSymbolResult]

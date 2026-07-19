@@ -42,6 +42,8 @@ def test_equity_etf_research_service_runs_end_to_end() -> None:
     assert response.data_vendors == ["stooq"]
     assert response.dataset_checksum.startswith("sha256:")
     assert response.data_profile[0].first_bar_date == "2024-01-01"
+    assert response.raw_bars[0].symbol == "SPY"
+    assert response.raw_bars[0].open == 100
     assert response.steps[0].name == "Fetch market data"
     assert response.decisions[0].area == "Data vendor"
     assert len(response.symbols_result) == 2

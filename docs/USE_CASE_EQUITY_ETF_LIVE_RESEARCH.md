@@ -61,6 +61,7 @@ The response includes:
 - `dataset_checksum`: deterministic checksum over the request and resulting metrics.
 - `mining_summary`: signal and optimization methods.
 - `data_profile`: vendor, requested range, available range, bar count, and latest close per symbol.
+- `raw_bars`: complete normalized OHLCV rows used by the experiment.
 - `steps`: ordered workflow trail covering data fetch, mining, signal generation, backtest, and portfolio construction.
 - `decisions`: human-readable decisions and rationales made during the run.
 - `symbols_result`: per-symbol bar counts, latest close, signal, return, volatility, Sharpe, drawdown, and turnover.
@@ -74,6 +75,7 @@ Open the web console, go to **Experiments**, and run **Equity/ETF live-data rese
 After the run completes, the UI displays:
 
 - **Data used**: symbols, vendors, requested date range, available bar range, bar counts, and latest close.
+- **Complete raw data used**: every normalized OHLCV row returned to the experiment.
 - **Steps followed**: each workflow step, input, method, and output.
 - **Decisions made**: data-vendor, signal, portfolio, and cash decisions with rationales.
 - **Backtest results**: per-symbol metrics.

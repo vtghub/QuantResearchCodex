@@ -124,6 +124,21 @@ function EquityEtfUseCase() {
             />
           </div>
           <div className="detail-section">
+            <h4>Complete raw data used</h4>
+            <DataTable
+              rows={result.raw_bars.map((row) => ({
+                Symbol: row.symbol,
+                Date: row.date,
+                Open: row.open.toFixed(2),
+                High: row.high.toFixed(2),
+                Low: row.low.toFixed(2),
+                Close: row.close.toFixed(2),
+                Volume: row.volume.toLocaleString(),
+                Vendor: row.vendor
+              }))}
+            />
+          </div>
+          <div className="detail-section">
             <h4>Steps followed</h4>
             <DataTable
               rows={result.steps.map((row) => ({

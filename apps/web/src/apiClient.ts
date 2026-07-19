@@ -19,6 +19,16 @@ export type EquityEtfResearchResult = {
     bar_count: number;
     latest_close: number;
   }>;
+  raw_bars: Array<{
+    symbol: string;
+    date: string;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    volume: number;
+    vendor: string;
+  }>;
   steps: Array<{
     order: number;
     name: string;
