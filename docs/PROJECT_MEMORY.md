@@ -24,6 +24,7 @@
 - Equity/ETF live online-data research use case is implemented and locally verified with deterministic tests.
 - Experiment run detail UI now shows data used, workflow steps, and decisions/rationales.
 - Experiment detail trail now includes complete normalized raw OHLCV bars used by each run.
+- Experiment toolbar controls now open editable research filters and run the current Equity/ETF use case.
 
 ## Locked Decisions
 
@@ -79,3 +80,4 @@
 - 2026-07-19: Implemented the first end-to-end equity/ETF live online-data research workflow with Stooq to Yahoo-compatible vendor fallback, data mining, signal generation, vector backtests, long-only portfolio construction, API route, docs, tests, regenerated OpenAPI schema, and a successful SPY/QQQ/IWM online-data smoke test.
 - 2026-07-19: Added experiment detail trail fields and UI sections for data used, steps followed, decisions made, backtest results, and portfolio construction diagnostics.
 - 2026-07-19: Added complete raw normalized OHLCV bars to the equity/ETF experiment response and UI.
+- 2026-07-19: Wired Experiments toolbar controls so Adjust Filters edits request parameters and Create Research Run executes the current Equity/ETF experiment.

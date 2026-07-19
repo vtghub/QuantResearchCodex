@@ -63,7 +63,30 @@ export type EquityEtfResearchResult = {
   cash_weight: number;
 };
 
-export async function runEquityEtfResearch(signal?: AbortSignal): Promise<EquityEtfResearchResult> {
+export type EquityEtfResearchRequest = {
+  symbols: string[];
+  start: string;
+  end: string;
+  fast_window: number;
+  slow_window: number;
+  fee_bps: number;
+  slippage_bps: number;
+};
+
+export const defaultEquityEtfResearchRequest: EquityEtfResearchRequest = {
+  symbols: ["SPY", "QQQ", "IWM"],
+  start: "20240101",
+  end: "20241231",
+  fast_window: 20,
+  slow_window: 50,
+  fee_bps: 1,
+  slippage_bps: 1
+};
+
+export async function runEquityEtfResearch(
+  request: EquityEtfResearchRequest = defaultEquityEtfResearchRequest,
+  signal?: AbortSignal
+): Promise<EquityEtfResearchResult> {
   const response = await fetch(
     `${defaultBaseUrl}/api/v1/research/use-cases/equity-etf/live-run`,
     {
@@ -72,15 +95,7 @@ export async function runEquityEtfResearch(signal?: AbortSignal): Promise<Equity
         "Content-Type": "application/json",
         "x-role": "researcher"
       },
-      body: JSON.stringify({
-        symbols: ["SPY", "QQQ", "IWM"],
-        start: "20240101",
-        end: "20241231",
-        fast_window: 20,
-        slow_window: 50,
-        fee_bps: 1,
-        slippage_bps: 1
-      }),
+      body: JSON.stringify(request),
       signal
     }
   );

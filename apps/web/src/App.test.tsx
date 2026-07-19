@@ -145,6 +145,40 @@ describe("App", () => {
     expect(screen.getByText("100.00%")).toBeTruthy();
   });
 
+  it("opens filters and runs the use case from the panel action", async () => {
+    vi.mocked(globalThis.fetch)
+      .mockRejectedValueOnce(new Error("API offline"))
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data_vendors: ["yahoo-finance-compatible"],
+            dataset_checksum: "sha256:test",
+            data_profile: [],
+            raw_bars: [],
+            steps: [],
+            decisions: [],
+            symbols_result: [],
+            allocations: [],
+            cash_weight: 1
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
+    render(<App />);
+    await screen.findByText("Static fallback mode");
+    fireEvent.click(screen.getByRole("button", { name: "Experiments" }));
+    fireEvent.click(screen.getByTitle("Adjust filters"));
+
+    const symbolsInput = screen.getByLabelText("Symbols");
+    fireEvent.change(symbolsInput, { target: { value: "SPY,DIA" } });
+    fireEvent.click(screen.getByTitle("Create research run"));
+
+    expect(await screen.findByText("Vendor: yahoo-finance-compatible")).toBeTruthy();
+    const request = JSON.parse(vi.mocked(globalThis.fetch).mock.calls[1][1]?.body as string);
+    expect(request.symbols).toEqual(["SPY", "DIA"]);
+  });
+
   it("hydrates console data from the API when available", async () => {
     vi.mocked(globalThis.fetch).mockResolvedValueOnce(
       new Response(

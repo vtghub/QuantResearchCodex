@@ -72,6 +72,8 @@ The response includes:
 
 Open the web console, go to **Experiments**, and run **Equity/ETF live-data research**.
 
+The **Adjust filters** toolbar button opens editable controls for symbols, date range, moving-average windows, fees, and slippage. The **Create research run** toolbar button runs the experiment with the current filters, and the use-case card button does the same.
+
 After the run completes, the UI displays:
 
 - **Data used**: symbols, vendors, requested date range, available bar range, bar counts, and latest close.

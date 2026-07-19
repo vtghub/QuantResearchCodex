@@ -346,6 +346,31 @@ button {
   gap: 12px;
 }
 
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.filter-grid label {
+  display: grid;
+  gap: 4px;
+  color: #52636b;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.filter-grid input {
+  min-height: 36px;
+  border: 1px solid #cfd8dc;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #172026;
+  padding: 6px 8px;
+  text-transform: none;
+}
+
 .detail-section {
   display: grid;
   gap: 8px;
@@ -435,7 +460,8 @@ tr:last-child td {
   }
 
   .comparison-row,
-  .gate-list {
+  .gate-list,
+  .filter-grid {
     grid-template-columns: 1fr;
   }
 }

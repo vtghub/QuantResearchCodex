@@ -10,7 +10,13 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 
-import { fetchConsolePayload, runEquityEtfResearch, type EquityEtfResearchResult } from "./apiClient";
+import {
+  defaultEquityEtfResearchRequest,
+  fetchConsolePayload,
+  runEquityEtfResearch,
+  type EquityEtfResearchRequest,
+  type EquityEtfResearchResult
+} from "./apiClient";
 import {
   fallbackConsolePayload,
   sectionIcons,
@@ -75,7 +81,17 @@ const promotionGates = [
   { label: "Live approval", state: "Blocked", detail: "Live trading disabled" }
 ];
 
-function EquityEtfUseCase() {
+function EquityEtfUseCase({
+  filtersOpen,
+  request,
+  setRequest,
+  runToken
+}: {
+  filtersOpen: boolean;
+  request: EquityEtfResearchRequest;
+  setRequest: (request: EquityEtfResearchRequest) => void;
+  runToken: number;
+}) {
   const [status, setStatus] = useState<"idle" | "running" | "complete" | "error">("idle");
   const [result, setResult] = useState<EquityEtfResearchResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -83,7 +99,7 @@ function EquityEtfUseCase() {
   function runUseCase() {
     setStatus("running");
     setError(null);
-    runEquityEtfResearch()
+    runEquityEtfResearch(request)
       .then((payload) => {
         setResult(payload);
         setStatus("complete");
@@ -94,15 +110,87 @@ function EquityEtfUseCase() {
       });
   }
 
+  useEffect(() => {
+    if (runToken > 0) {
+      runUseCase();
+    }
+  }, [runToken]);
+
+  function updateField<K extends keyof EquityEtfResearchRequest>(
+    key: K,
+    value: EquityEtfResearchRequest[K]
+  ) {
+    setRequest({ ...request, [key]: value });
+  }
+
   return (
     <section className="insight-panel" aria-label="Equity ETF live research use case">
       <div className="insight-heading">
         <FlaskConical aria-hidden="true" />
         <h3>Equity/ETF live-data research</h3>
         <button className="run-use-case" disabled={status === "running"} onClick={runUseCase} type="button">
-          {status === "running" ? "Running" : "Run SPY/QQQ/IWM"}
+          {status === "running" ? "Running" : `Run ${request.symbols.join("/")}`}
         </button>
       </div>
+      {filtersOpen && (
+        <div className="filter-grid" aria-label="Research filters">
+          <label>
+            Symbols
+            <input
+              value={request.symbols.join(",")}
+              onChange={(event) =>
+                updateField(
+                  "symbols",
+                  event.target.value
+                    .split(",")
+                    .map((symbol) => symbol.trim().toUpperCase())
+                    .filter(Boolean)
+                )
+              }
+            />
+          </label>
+          <label>
+            Start
+            <input value={request.start} onChange={(event) => updateField("start", event.target.value)} />
+          </label>
+          <label>
+            End
+            <input value={request.end} onChange={(event) => updateField("end", event.target.value)} />
+          </label>
+          <label>
+            Fast MA
+            <input
+              type="number"
+              value={request.fast_window}
+              onChange={(event) => updateField("fast_window", Number(event.target.value))}
+            />
+          </label>
+          <label>
+            Slow MA
+            <input
+              type="number"
+              value={request.slow_window}
+              onChange={(event) => updateField("slow_window", Number(event.target.value))}
+            />
+          </label>
+          <label>
+            Fee bps
+            <input
+              type="number"
+              value={request.fee_bps}
+              onChange={(event) => updateField("fee_bps", Number(event.target.value))}
+            />
+          </label>
+          <label>
+            Slippage bps
+            <input
+              type="number"
+              value={request.slippage_bps}
+              onChange={(event) => updateField("slippage_bps", Number(event.target.value))}
+            />
+          </label>
+        </div>
+      )}
       {status === "idle" && (
         <p className="use-case-note">Fetches free online bars, generates signals, backtests, and builds weights.</p>
       )}
@@ -193,7 +281,19 @@ function EquityEtfUseCase() {
   );
 }
 
-function PanelDetail({ activeKey }: { activeKey: SectionKey }) {
+function PanelDetail({
+  activeKey,
+  filtersOpen,
+  equityRequest,
+  setEquityRequest,
+  runToken
+}: {
+  activeKey: SectionKey;
+  filtersOpen: boolean;
+  equityRequest: EquityEtfResearchRequest;
+  setEquityRequest: (request: EquityEtfResearchRequest) => void;
+  runToken: number;
+}) {
   if (activeKey === "experiments") {
     return (
       <>
@@ -214,7 +314,12 @@ function PanelDetail({ activeKey }: { activeKey: SectionKey }) {
             ))}
           </div>
         </section>
-        <EquityEtfUseCase />
+        <EquityEtfUseCase
+          filtersOpen={filtersOpen}
+          request={equityRequest}
+          runToken={runToken}
+          setRequest={setEquityRequest}
+        />
       </>
     );
   }
@@ -246,6 +351,11 @@ export function App() {
   const [activeKey, setActiveKey] = useState<SectionKey>("data");
   const [consolePayload, setConsolePayload] = useState<ConsolePayload>(fallbackConsolePayload);
   const [dataSource, setDataSource] = useState<"api" | "fallback">("fallback");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [equityRequest, setEquityRequest] = useState<EquityEtfResearchRequest>(
+    defaultEquityEtfResearchRequest
+  );
+  const [runToken, setRunToken] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -342,10 +452,22 @@ export function App() {
               </div>
             </div>
             <div className="panel-actions">
-              <button type="button" title="Adjust filters">
+              <button
+                onClick={() => setFiltersOpen((open) => !open)}
+                type="button"
+                title="Adjust filters"
+              >
                 <SlidersHorizontal aria-hidden="true" />
               </button>
-              <button type="button" title={activePanel.action}>
+              <button
+                onClick={() => {
+                  if (activeKey === "experiments") {
+                    setRunToken((token) => token + 1);
+                  }
+                }}
+                type="button"
+                title={activePanel.action}
+              >
                 <Play aria-hidden="true" />
               </button>
             </div>
@@ -353,7 +475,13 @@ export function App() {
 
           <p className="panel-description">{activePanel.description}</p>
           <DataTable rows={activePanel.rows} />
-          <PanelDetail activeKey={activeKey} />
+          <PanelDetail
+            activeKey={activeKey}
+            equityRequest={equityRequest}
+            filtersOpen={filtersOpen}
+            runToken={runToken}
+            setEquityRequest={setEquityRequest}
+          />
         </section>
 
         <section className="operations-band">
