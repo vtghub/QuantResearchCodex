@@ -243,3 +243,20 @@ class ArtifactVersion(BaseModel):
     checksum: str
     metrics: dict[str, float]
     created_at: datetime
+
+
+class OpsMetricsResponse(BaseModel):
+    service: str = "quantresearch-api"
+    environment: str
+    live_trading_enabled: bool
+    job_backend: str
+    jobs: dict[str, int]
+    generated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+
+class AuditExportResponse(BaseModel):
+    tenant_id: UUID
+    format: str = "json"
+    record_count: int
+    records: list[AuditRecord]
+    exported_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

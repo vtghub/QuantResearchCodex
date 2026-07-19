@@ -4,7 +4,7 @@
 
 - Repository began empty on `main`.
 - Git remote `origin` is `https://github.com/vtghub/QuantResearchCodex`.
-- Implementation work is on `feature/ui-experiment-promotion`.
+- Implementation work is on `feature/observability-audit-polish`.
 - The approved Terra plan is in `docs/IMPLEMENTATION_PLAN.md`.
 - First scaffold milestone has been implemented and locally verified.
 - The first web UI navigation feature slice is implemented and locally verified.
@@ -20,6 +20,7 @@
 - Durable job-state abstractions and local JSON persistence are implemented and locally verified.
 - Dataset storage manifests and artifact versioning foundations are implemented and locally verified.
 - Experiment comparison and strategy promotion UI surfaces are implemented and locally verified.
+- Observability metrics, audit export, and deployment runbook polish are implemented and locally verified.
 
 ## Locked Decisions
 
@@ -49,7 +50,7 @@
 
 ## Next Milestone
 
-- Add observability, audit export, and deployment polish.
+- Post-scaffold hardening: real Postgres/Redis/MinIO persistence, real broker/data credentials via secret stores, production auth provider wiring, and Docker/Helm validation on a machine with Docker available.
 
 ## Change Log
 
@@ -71,3 +72,4 @@
 - 2026-07-19: Implemented durable job-state foundation with `JobStore` abstraction, in-memory and JSON-file stores, Redis/Postgres-compatible placeholders, job state API, worker backend reporting, tests, and regenerated OpenAPI schema.
 - 2026-07-19: Implemented dataset and artifact catalog foundation with tenant-scoped storage manifests, checksum/provenance fields, strategy/backtest artifact versions, API routes, tests, and regenerated OpenAPI schema.
 - 2026-07-19: Implemented web UI experiment comparison and strategy promotion surfaces with compact comparison metrics, promotion gates, responsive styling, and updated Vitest coverage.
+- 2026-07-19: Implemented observability/audit/deployment polish with ops metrics, JSON audit export, deployment runbook, tests, and regenerated OpenAPI schema.

@@ -73,6 +73,26 @@ def test_job_state_endpoint_reports_queue_counts() -> None:
     assert "queued" in response.json()
 
 
+def test_ops_metrics_reports_job_backend() -> None:
+    response = client.get("/api/v1/ops/metrics")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["service"] == "quantresearch-api"
+    assert body["job_backend"] == "memory"
+    assert "jobs" in body
+
+
+def test_audit_export_wraps_records() -> None:
+    response = client.get("/api/v1/audit/export")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["format"] == "json"
+    assert body["record_count"] == len(body["records"])
+    assert body["records"][0]["immutable"] is True
+
+
 def test_unknown_job_returns_not_found() -> None:
     response = client.post("/api/v1/jobs/missing/run")
 

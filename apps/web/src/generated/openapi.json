@@ -207,6 +207,43 @@
         "title": "AssetClass",
         "type": "string"
       },
+      "AuditExportResponse": {
+        "properties": {
+          "exported_at": {
+            "format": "date-time",
+            "title": "Exported At",
+            "type": "string"
+          },
+          "format": {
+            "default": "json",
+            "title": "Format",
+            "type": "string"
+          },
+          "record_count": {
+            "title": "Record Count",
+            "type": "integer"
+          },
+          "records": {
+            "items": {
+              "$ref": "#/components/schemas/AuditRecord"
+            },
+            "title": "Records",
+            "type": "array"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "record_count",
+          "records"
+        ],
+        "title": "AuditExportResponse",
+        "type": "object"
+      },
       "AuditRecord": {
         "properties": {
           "action": {
@@ -1020,6 +1057,47 @@
         "title": "LoginRequest",
         "type": "object"
       },
+      "OpsMetricsResponse": {
+        "properties": {
+          "environment": {
+            "title": "Environment",
+            "type": "string"
+          },
+          "generated_at": {
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "job_backend": {
+            "title": "Job Backend",
+            "type": "string"
+          },
+          "jobs": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Jobs",
+            "type": "object"
+          },
+          "live_trading_enabled": {
+            "title": "Live Trading Enabled",
+            "type": "boolean"
+          },
+          "service": {
+            "default": "quantresearch-api",
+            "title": "Service",
+            "type": "string"
+          }
+        },
+        "required": [
+          "environment",
+          "live_trading_enabled",
+          "job_backend",
+          "jobs"
+        ],
+        "title": "OpsMetricsResponse",
+        "type": "object"
+      },
       "RegisterUserRequest": {
         "properties": {
           "display_name": {
@@ -1544,6 +1622,85 @@
           }
         ],
         "summary": "Create Artifact"
+      }
+    },
+    "/api/v1/audit/export": {
+      "get": {
+        "operationId": "audit_export_api_v1_audit_export_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-tenant-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Tenant-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-role",
+            "required": false,
+            "schema": {
+              "default": "platform_admin",
+              "title": "X-Role",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditExportResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Audit Export"
       }
     },
     "/api/v1/audit/records": {
@@ -2796,6 +2953,85 @@
           }
         ],
         "summary": "Run Job"
+      }
+    },
+    "/api/v1/ops/metrics": {
+      "get": {
+        "operationId": "ops_metrics_api_v1_ops_metrics_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-tenant-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Tenant-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-role",
+            "required": false,
+            "schema": {
+              "default": "platform_admin",
+              "title": "X-Role",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpsMetricsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Ops Metrics"
       }
     },
     "/api/v1/orders": {

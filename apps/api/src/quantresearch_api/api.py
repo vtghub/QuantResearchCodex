@@ -13,6 +13,7 @@ from quantresearch_api.schemas import (
     ApprovalRecord,
     ApprovalRequest,
     ArtifactVersion,
+    AuditExportResponse,
     AuditRecord,
     AuthProvider,
     AuthTokenResponse,
@@ -30,6 +31,7 @@ from quantresearch_api.schemas import (
     KillSwitchRequest,
     KillSwitchState,
     LoginRequest,
+    OpsMetricsResponse,
     RegisterUserRequest,
     ResourceKind,
     ResourceSummary,
@@ -330,6 +332,16 @@ async def audit_records(context: ReadTenantDep) -> list[AuditRecord]:
     ]
 
 
+@v1_router.get("/audit/export", response_model=AuditExportResponse)
+async def audit_export(context: ReadTenantDep) -> AuditExportResponse:
+    records = await audit_records(context)
+    return AuditExportResponse(
+        tenant_id=context.tenant_id,
+        record_count=len(records),
+        records=records,
+    )
+
+
 @v1_router.get("/admin/users", response_model=list[ResourceSummary])
 async def users(context: AdminTenantDep) -> list[ResourceSummary]:
     return [_resource(context, ResourceKind.USER, "Platform Admin", "active")]
@@ -532,6 +544,24 @@ async def jobs(context: ReadTenantDep) -> list[JobRecord]:
 @v1_router.get("/jobs/state", response_model=JobStateSummary)
 async def job_state(context: ReadTenantDep) -> JobStateSummary:
     return job_queue.state(str(context.tenant_id))
+
+
+@v1_router.get("/ops/metrics", response_model=OpsMetricsResponse)
+async def ops_metrics(context: ReadTenantDep) -> OpsMetricsResponse:
+    settings = get_settings()
+    state = job_queue.state(str(context.tenant_id))
+    return OpsMetricsResponse(
+        environment=settings.env,
+        live_trading_enabled=settings.live_trading_enabled,
+        job_backend=state.backend,
+        jobs={
+            "total": state.total,
+            "queued": state.queued,
+            "running": state.running,
+            "succeeded": state.succeeded,
+            "failed": state.failed,
+        },
+    )
 
 
 @v1_router.post("/jobs/ingest", response_model=JobRecord, status_code=202)
