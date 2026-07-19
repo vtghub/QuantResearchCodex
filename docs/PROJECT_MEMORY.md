@@ -4,7 +4,7 @@
 
 - Repository began empty on `main`.
 - Git remote `origin` is `https://github.com/vtghub/QuantResearchCodex`.
-- Implementation work is on `feature/research-backtest-engine`.
+- Implementation work is on `feature/auth-rbac-foundation`.
 - The approved Terra plan is in `docs/IMPLEMENTATION_PLAN.md`.
 - First scaffold milestone has been implemented and locally verified.
 - The first web UI navigation feature slice is implemented and locally verified.
@@ -13,6 +13,7 @@
 - OpenAPI generated client and contract drift checks are implemented and locally verified.
 - Job orchestration and adapter-backed ingestion jobs are implemented and locally verified.
 - Vectorized research and backtest execution is implemented and locally verified.
+- Auth/RBAC request-context enforcement is implemented and locally verified.
 
 ## Locked Decisions
 
@@ -42,7 +43,8 @@
 
 ## Next Milestone
 
-- Add auth/RBAC persistence and tenant enforcement.
+- Add persistent local accounts and OIDC/OAuth hooks.
+- Add paper-trading broker sandbox gates.
 
 ## Change Log
 
@@ -57,3 +59,4 @@
 - 2026-07-18: Implemented generated OpenAPI client, committed OpenAPI schema, wired the web console to generated types, and added CI drift plus Compose contract checks.
 - 2026-07-18: Implemented job orchestration and ingestion phase with queue contracts, adapter-backed ingestion execution, job API endpoints, worker run-once hook, tests, and regenerated OpenAPI schema.
 - 2026-07-18: Implemented vectorized research and backtest phase with deterministic moving-average signals, cost-aware portfolio metrics, job integration, and focused tests.
+- 2026-07-18: Implemented auth/RBAC foundation with role-gated API dependencies, stable default tenant/workspace context, route-level permission tests, and regenerated OpenAPI schema.

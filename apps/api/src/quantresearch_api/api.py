@@ -16,12 +16,40 @@ from quantresearch_api.schemas import (
     StrategySummary,
     TenantContext,
 )
-from quantresearch_api.security import get_tenant_context
+from quantresearch_api.security import (
+    ROLE_ORG_ADMIN,
+    ROLE_PLATFORM_ADMIN,
+    ROLE_RESEARCHER,
+    ROLE_TRADER,
+    ROLE_VIEWER,
+    get_tenant_context,
+    require_roles,
+)
 from quantresearch_api.settings import get_settings
 
 api_router = APIRouter()
 v1_router = APIRouter(prefix="/api/v1")
 TenantDep = Annotated[TenantContext, Depends(get_tenant_context)]
+AdminTenantDep = Annotated[
+    TenantContext,
+    Depends(require_roles(ROLE_PLATFORM_ADMIN, ROLE_ORG_ADMIN)),
+]
+ResearchTenantDep = Annotated[
+    TenantContext,
+    Depends(require_roles(ROLE_PLATFORM_ADMIN, ROLE_ORG_ADMIN, ROLE_RESEARCHER, ROLE_TRADER)),
+]
+ReadTenantDep = Annotated[
+    TenantContext,
+    Depends(
+        require_roles(
+            ROLE_PLATFORM_ADMIN,
+            ROLE_ORG_ADMIN,
+            ROLE_RESEARCHER,
+            ROLE_TRADER,
+            ROLE_VIEWER,
+        )
+    ),
+]
 
 
 @api_router.get("/health", response_model=HealthResponse)
@@ -54,12 +82,12 @@ async def identity_me(context: TenantDep) -> TenantContext:
 
 
 @v1_router.get("/workspaces", response_model=list[ResourceSummary])
-async def list_workspaces(context: TenantDep) -> list[ResourceSummary]:
+async def list_workspaces(context: ReadTenantDep) -> list[ResourceSummary]:
     return [_resource(context, ResourceKind.WORKSPACE, "Default Research Workspace")]
 
 
 @v1_router.get("/data/catalog", response_model=list[ResourceSummary])
-async def data_catalog(context: TenantDep) -> list[ResourceSummary]:
+async def data_catalog(context: ReadTenantDep) -> list[ResourceSummary]:
     return [
         _resource(context, ResourceKind.DATASET, "US Equities Daily Bars", "stubbed"),
         _resource(context, ResourceKind.DATASET, "Crypto Spot Daily Bars", "stubbed"),
@@ -68,7 +96,7 @@ async def data_catalog(context: TenantDep) -> list[ResourceSummary]:
 
 
 @v1_router.get("/research/runs", response_model=list[ResourceSummary])
-async def research_runs(context: TenantDep) -> list[ResourceSummary]:
+async def research_runs(context: ReadTenantDep) -> list[ResourceSummary]:
     return [
         _resource(
             context,
@@ -80,7 +108,7 @@ async def research_runs(context: TenantDep) -> list[ResourceSummary]:
 
 
 @v1_router.get("/strategies", response_model=list[StrategySummary])
-async def strategies(context: TenantDep) -> list[StrategySummary]:
+async def strategies(context: ReadTenantDep) -> list[StrategySummary]:
     return [
         StrategySummary(
             tenant_id=context.tenant_id,
@@ -93,27 +121,27 @@ async def strategies(context: TenantDep) -> list[StrategySummary]:
 
 
 @v1_router.get("/backtests", response_model=list[ResourceSummary])
-async def backtests(context: TenantDep) -> list[ResourceSummary]:
+async def backtests(context: ReadTenantDep) -> list[ResourceSummary]:
     return [_resource(context, ResourceKind.BACKTEST, "Event-Driven Portfolio Backtest", "stubbed")]
 
 
 @v1_router.get("/portfolios", response_model=list[ResourceSummary])
-async def portfolios(context: TenantDep) -> list[ResourceSummary]:
+async def portfolios(context: ReadTenantDep) -> list[ResourceSummary]:
     return [_resource(context, ResourceKind.PORTFOLIO, "Paper Multi-Asset Portfolio", "inactive")]
 
 
 @v1_router.get("/orders", response_model=list[ResourceSummary])
-async def orders(context: TenantDep) -> list[ResourceSummary]:
+async def orders(context: ReadTenantDep) -> list[ResourceSummary]:
     return [_resource(context, ResourceKind.ORDER, "Live Orders Disabled", "blocked")]
 
 
 @v1_router.get("/risk/events", response_model=list[ResourceSummary])
-async def risk_events(context: TenantDep) -> list[ResourceSummary]:
+async def risk_events(context: ReadTenantDep) -> list[ResourceSummary]:
     return [_resource(context, ResourceKind.RISK_EVENT, "No active breaches", "clear")]
 
 
 @v1_router.get("/audit/records", response_model=list[AuditRecord])
-async def audit_records(context: TenantDep) -> list[AuditRecord]:
+async def audit_records(context: ReadTenantDep) -> list[AuditRecord]:
     target = _resource(context, ResourceKind.WORKSPACE, "Default Research Workspace")
     return [
         AuditRecord(
@@ -127,12 +155,12 @@ async def audit_records(context: TenantDep) -> list[AuditRecord]:
 
 
 @v1_router.get("/admin/users", response_model=list[ResourceSummary])
-async def users(context: TenantDep) -> list[ResourceSummary]:
+async def users(context: AdminTenantDep) -> list[ResourceSummary]:
     return [_resource(context, ResourceKind.USER, "Platform Admin", "active")]
 
 
 @v1_router.get("/console", response_model=ConsoleResponse)
-async def console(context: TenantDep) -> ConsoleResponse:
+async def console(context: ReadTenantDep) -> ConsoleResponse:
     return ConsoleResponse(
         metrics=[
             ConsoleMetric(key="data", label="Data Health", value="3", detail="adapters ready"),
@@ -321,14 +349,14 @@ async def console(context: TenantDep) -> ConsoleResponse:
 
 
 @v1_router.get("/jobs", response_model=list[JobRecord])
-async def jobs(context: TenantDep) -> list[JobRecord]:
+async def jobs(context: ReadTenantDep) -> list[JobRecord]:
     return job_queue.list(str(context.tenant_id))
 
 
 @v1_router.post("/jobs/ingest", response_model=JobRecord, status_code=202)
 async def enqueue_ingestion(
     request: EnqueueIngestionRequest,
-    context: TenantDep,
+    context: ResearchTenantDep,
 ) -> JobRecord:
     return job_queue.enqueue(
         JobRecord(
@@ -343,7 +371,7 @@ async def enqueue_ingestion(
 @v1_router.post("/jobs/research", response_model=JobRecord, status_code=202)
 async def enqueue_research(
     request: EnqueueResearchRequest,
-    context: TenantDep,
+    context: ResearchTenantDep,
 ) -> JobRecord:
     return job_queue.enqueue(
         JobRecord(
@@ -356,7 +384,7 @@ async def enqueue_research(
 
 
 @v1_router.post("/jobs/{job_id}/run", response_model=JobRecord)
-async def run_job(job_id: str) -> JobRecord:
+async def run_job(job_id: str, _context: ResearchTenantDep) -> JobRecord:
     if job_queue.get(job_id) is None:
         raise HTTPException(status_code=404, detail="Job not found")
     return await job_queue.run(job_id)

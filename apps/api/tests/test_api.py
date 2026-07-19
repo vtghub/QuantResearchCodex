@@ -69,3 +69,25 @@ def test_unknown_job_returns_not_found() -> None:
     response = client.post("/api/v1/jobs/missing/run")
 
     assert response.status_code == 404
+
+
+def test_viewer_can_read_console() -> None:
+    response = client.get("/api/v1/console", headers={"x-role": "viewer"})
+
+    assert response.status_code == 200
+
+
+def test_viewer_cannot_enqueue_ingestion_job() -> None:
+    response = client.post(
+        "/api/v1/jobs/ingest",
+        json={"provider": "stooq", "symbols": ["SPY"]},
+        headers={"x-role": "viewer"},
+    )
+
+    assert response.status_code == 403
+
+
+def test_researcher_cannot_list_admin_users() -> None:
+    response = client.get("/api/v1/admin/users", headers={"x-role": "researcher"})
+
+    assert response.status_code == 403
