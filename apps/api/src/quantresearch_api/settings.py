@@ -22,7 +22,14 @@ class Settings(BaseSettings):
     paper_order_max_notional: float = 100_000
     job_store_backend: str = "memory"
     job_state_file: str = ".quantresearch/jobs.json"
-    cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:5173"])
+    cors_origins: list[str] = Field(
+        default_factory=lambda: [
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://localhost:5174",
+            "http://127.0.0.1:5174",
+        ]
+    )
 
 
 @lru_cache

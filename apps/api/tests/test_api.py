@@ -12,6 +12,19 @@ def test_health_reports_live_trading_disabled_by_default() -> None:
     assert response.json()["live_trading_enabled"] is False
 
 
+def test_static_preview_origin_is_allowed_for_cors() -> None:
+    response = client.options(
+        "/api/v1/research/use-cases/equity-etf/live-run",
+        headers={
+            "Origin": "http://127.0.0.1:5174",
+            "Access-Control-Request-Method": "POST",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://127.0.0.1:5174"
+
+
 def test_tenant_context_uses_headers() -> None:
     tenant_id = "00000000-0000-0000-0000-000000000001"
     workspace_id = "00000000-0000-0000-0000-000000000002"
