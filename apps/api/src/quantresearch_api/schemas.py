@@ -3,7 +3,7 @@ from enum import StrEnum
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
-from quantresearch_core.contracts import StrategyLifecycle
+from quantresearch_core.contracts import AssetClass, BrokerMode, StrategyLifecycle
 
 
 class ResourceKind(StrEnum):
@@ -117,3 +117,31 @@ class AuthProvider(BaseModel):
     type: str
     enabled: bool
     status: str
+
+
+class BrokerOrderRequest(BaseModel):
+    strategy_id: UUID
+    symbol: str = Field(min_length=1)
+    asset_class: AssetClass = AssetClass.EQUITY
+    venue: str = "SMART"
+    currency: str = "USD"
+    timezone: str = "America/New_York"
+    side: str = Field(pattern="^(buy|sell)$")
+    quantity: float = Field(gt=0)
+    order_type: str = Field(pattern="^(market|limit)$")
+    estimated_price: float = Field(gt=0)
+    client_order_id: str = Field(min_length=8, max_length=128)
+    mode: BrokerMode = BrokerMode.PAPER
+
+    @property
+    def estimated_notional(self) -> float:
+        return self.quantity * self.estimated_price
+
+
+class BrokerOrderResponse(BaseModel):
+    broker: str
+    mode: BrokerMode
+    client_order_id: str
+    status: str
+    estimated_notional: float
+    gates: list[str]

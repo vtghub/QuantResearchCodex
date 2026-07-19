@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     object_store_endpoint: str = "http://localhost:9000"
     object_store_bucket: str = "quantresearch"
     live_trading_enabled: bool = False
+    paper_order_max_notional: float = 100_000
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:5173"])
 
 

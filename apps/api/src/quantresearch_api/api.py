@@ -3,11 +3,14 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 
 from quantresearch_api.auth import auth_service, issue_token
+from quantresearch_api.brokers import BrokerSandboxGateError, broker_sandbox_service
 from quantresearch_api.jobs import JobKind, JobRecord, job_queue
 from quantresearch_api.schemas import (
     AuditRecord,
     AuthProvider,
     AuthTokenResponse,
+    BrokerOrderRequest,
+    BrokerOrderResponse,
     ConsoleMetric,
     ConsolePanel,
     ConsoleResponse,
@@ -42,6 +45,10 @@ AdminTenantDep = Annotated[
 ResearchTenantDep = Annotated[
     TenantContext,
     Depends(require_roles(ROLE_PLATFORM_ADMIN, ROLE_ORG_ADMIN, ROLE_RESEARCHER, ROLE_TRADER)),
+]
+TraderTenantDep = Annotated[
+    TenantContext,
+    Depends(require_roles(ROLE_PLATFORM_ADMIN, ROLE_ORG_ADMIN, ROLE_TRADER)),
 ]
 ReadTenantDep = Annotated[
     TenantContext,
@@ -181,7 +188,31 @@ async def portfolios(context: ReadTenantDep) -> list[ResourceSummary]:
 
 @v1_router.get("/orders", response_model=list[ResourceSummary])
 async def orders(context: ReadTenantDep) -> list[ResourceSummary]:
-    return [_resource(context, ResourceKind.ORDER, "Live Orders Disabled", "blocked")]
+    return [
+        _resource(context, ResourceKind.ORDER, "Paper Sandbox Orders", "ready"),
+        _resource(context, ResourceKind.ORDER, "Live Orders Disabled", "blocked"),
+    ]
+
+
+@v1_router.post(
+    "/brokers/{broker_name}/paper/orders",
+    response_model=BrokerOrderResponse,
+    status_code=202,
+)
+async def submit_paper_order(
+    broker_name: str,
+    request: BrokerOrderRequest,
+    context: TraderTenantDep,
+) -> BrokerOrderResponse:
+    try:
+        return await broker_sandbox_service.submit_order(
+            broker_name=broker_name,
+            request=request,
+            context=context,
+            settings=get_settings(),
+        )
+    except BrokerSandboxGateError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
 
 
 @v1_router.get("/risk/events", response_model=list[ResourceSummary])
