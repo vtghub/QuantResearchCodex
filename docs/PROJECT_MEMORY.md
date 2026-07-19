@@ -4,9 +4,10 @@
 
 - Repository began empty on `main`.
 - Git remote `origin` is `https://github.com/vtghub/QuantResearchCodex`.
-- Implementation work is on `feature/bootstrap-scaffold`.
+- Implementation work is on `feature/web-navigation-console`.
 - The approved Terra plan is in `docs/IMPLEMENTATION_PLAN.md`.
 - First scaffold milestone has been implemented and locally verified.
+- The first web UI navigation feature slice is implemented and locally verified.
 
 ## Locked Decisions
 
@@ -36,8 +37,8 @@
 
 ## Next Milestone
 
-- Commit the first scaffold, push `feature/bootstrap-scaffold`, and create `develop` after the first usable scaffold commit.
 - Add database models, Alembic migrations, generated OpenAPI client, and Compose integration tests.
+- Connect web console panels to live `/api/v1` resources instead of static local data.
 
 ## Change Log
 
@@ -46,3 +47,4 @@
 - 2026-07-18: Added first monorepo scaffold for FastAPI, React/Vite, quant contracts, adapters, Docker Compose, Helm, Terraform, GitHub Actions, and MCP-native-core developer docs.
 - 2026-07-18: Verified backend with `pytest` and `ruff`; verified frontend with Vite build, Vitest unit test, and Playwright Chromium smoke test.
 - 2026-07-18: Added pnpm v11 `allowBuilds` policy for `esbuild` in `pnpm-workspace.yaml`.
+- 2026-07-18: Implemented web navigation console so sidebar and status cards switch real panels instead of acting as stubs.
