@@ -28,6 +28,18 @@ describe("App", () => {
 
     expect(screen.getByRole("heading", { name: "Strategy lifecycle" })).toBeTruthy();
     expect(screen.getByText("Cross-Asset Momentum")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Promotion gates" })).toBeTruthy();
+    expect(screen.getByText("Two-person approval required")).toBeTruthy();
+  });
+
+  it("shows experiment comparison details", async () => {
+    render(<App />);
+    await screen.findByText("Static fallback mode");
+
+    fireEvent.click(screen.getByRole("button", { name: "Experiments" }));
+
+    expect(screen.getByRole("heading", { name: "Experiment comparison" })).toBeTruthy();
+    expect(screen.getByText("Promote to paper review")).toBeTruthy();
   });
 
   it("hydrates console data from the API when available", async () => {

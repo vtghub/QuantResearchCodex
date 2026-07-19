@@ -4,7 +4,7 @@
 
 - Repository began empty on `main`.
 - Git remote `origin` is `https://github.com/vtghub/QuantResearchCodex`.
-- Implementation work is on `feature/dataset-artifact-versioning`.
+- Implementation work is on `feature/ui-experiment-promotion`.
 - The approved Terra plan is in `docs/IMPLEMENTATION_PLAN.md`.
 - First scaffold milestone has been implemented and locally verified.
 - The first web UI navigation feature slice is implemented and locally verified.
@@ -19,6 +19,7 @@
 - Risk policy approvals and tenant kill-switch state are implemented and locally verified.
 - Durable job-state abstractions and local JSON persistence are implemented and locally verified.
 - Dataset storage manifests and artifact versioning foundations are implemented and locally verified.
+- Experiment comparison and strategy promotion UI surfaces are implemented and locally verified.
 
 ## Locked Decisions
 
@@ -48,7 +49,7 @@
 
 ## Next Milestone
 
-- Add experiment comparison and strategy promotion surfaces in the web UI.
+- Add observability, audit export, and deployment polish.
 
 ## Change Log
 
@@ -69,3 +70,4 @@
 - 2026-07-19: Implemented risk controls with tenant-scoped policy summaries, mutable kill-switch state, broker kill-switch enforcement, two-person approval requests/decisions, tests, and regenerated OpenAPI schema.
 - 2026-07-19: Implemented durable job-state foundation with `JobStore` abstraction, in-memory and JSON-file stores, Redis/Postgres-compatible placeholders, job state API, worker backend reporting, tests, and regenerated OpenAPI schema.
 - 2026-07-19: Implemented dataset and artifact catalog foundation with tenant-scoped storage manifests, checksum/provenance fields, strategy/backtest artifact versions, API routes, tests, and regenerated OpenAPI schema.
+- 2026-07-19: Implemented web UI experiment comparison and strategy promotion surfaces with compact comparison metrics, promotion gates, responsive styling, and updated Vitest coverage.

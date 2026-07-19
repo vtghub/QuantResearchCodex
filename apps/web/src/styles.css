@@ -229,6 +229,89 @@ button {
   border-radius: 8px;
 }
 
+.insight-panel {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #d8e0e4;
+  border-radius: 8px;
+  background: #f8fafb;
+  padding: 14px;
+}
+
+.insight-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.insight-heading h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.insight-heading svg {
+  width: 18px;
+  height: 18px;
+  color: #0f766e;
+}
+
+.comparison-grid,
+.gate-list {
+  display: grid;
+  gap: 8px;
+}
+
+.comparison-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.4fr) repeat(4, minmax(120px, 1fr));
+  gap: 10px;
+  align-items: center;
+  border: 1px solid #e1e7ea;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 10px 12px;
+}
+
+.comparison-row span,
+.comparison-row em,
+.gate-item p {
+  color: #52636b;
+  font-size: 13px;
+}
+
+.comparison-row em {
+  font-style: normal;
+  font-weight: 700;
+}
+
+.gate-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.gate-item {
+  min-height: 96px;
+  border: 1px solid #e1e7ea;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 12px;
+}
+
+.gate-item span {
+  color: #52636b;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.gate-item strong {
+  display: block;
+  margin: 6px 0;
+}
+
+.gate-item p {
+  margin: 0;
+}
+
 table {
   width: 100%;
   min-width: 620px;
@@ -303,6 +386,11 @@ tr:last-child td {
   }
 
   .operations-band {
+    grid-template-columns: 1fr;
+  }
+
+  .comparison-row,
+  .gate-list {
     grid-template-columns: 1fr;
   }
 }

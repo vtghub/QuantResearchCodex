@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   CheckCircle2,
+  GitCompareArrows,
+  GitPullRequestArrow,
   Lock,
   Play,
   SlidersHorizontal,
@@ -40,6 +42,82 @@ function DataTable({ rows }: { rows: Array<Record<string, string>> }) {
       </table>
     </div>
   );
+}
+
+const experimentComparisons = [
+  {
+    name: "Momentum Baseline",
+    sharpe: "1.18",
+    drawdown: "-8.1%",
+    turnover: "42%",
+    gate: "Promote to paper review"
+  },
+  {
+    name: "Crypto Trend",
+    sharpe: "0.74",
+    drawdown: "-18.4%",
+    turnover: "91%",
+    gate: "Needs cost model"
+  },
+  {
+    name: "Mean Reversion Template",
+    sharpe: "0.31",
+    drawdown: "-11.9%",
+    turnover: "128%",
+    gate: "Reject for now"
+  }
+];
+
+const promotionGates = [
+  { label: "Research validation", state: "Complete", detail: "Backtest artifact v1.0.0" },
+  { label: "Paper approval", state: "Pending", detail: "Two-person approval required" },
+  { label: "Live approval", state: "Blocked", detail: "Live trading disabled" }
+];
+
+function PanelDetail({ activeKey }: { activeKey: SectionKey }) {
+  if (activeKey === "experiments") {
+    return (
+      <section className="insight-panel" aria-label="Experiment comparison">
+        <div className="insight-heading">
+          <GitCompareArrows aria-hidden="true" />
+          <h3>Experiment comparison</h3>
+        </div>
+        <div className="comparison-grid">
+          {experimentComparisons.map((experiment) => (
+            <div className="comparison-row" key={experiment.name}>
+              <strong>{experiment.name}</strong>
+              <span>Sharpe {experiment.sharpe}</span>
+              <span>Max DD {experiment.drawdown}</span>
+              <span>Turnover {experiment.turnover}</span>
+              <em>{experiment.gate}</em>
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (activeKey === "strategies") {
+    return (
+      <section className="insight-panel" aria-label="Promotion gates">
+        <div className="insight-heading">
+          <GitPullRequestArrow aria-hidden="true" />
+          <h3>Promotion gates</h3>
+        </div>
+        <div className="gate-list">
+          {promotionGates.map((gate) => (
+            <div className="gate-item" key={gate.label}>
+              <span>{gate.label}</span>
+              <strong>{gate.state}</strong>
+              <p>{gate.detail}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  return null;
 }
 
 export function App() {
@@ -153,6 +231,7 @@ export function App() {
 
           <p className="panel-description">{activePanel.description}</p>
           <DataTable rows={activePanel.rows} />
+          <PanelDetail activeKey={activeKey} />
         </section>
 
         <section className="operations-band">
