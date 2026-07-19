@@ -8,10 +8,35 @@ const defaultBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:80
 
 export type EquityEtfResearchResult = {
   data_vendors: string[];
+  dataset_checksum: string;
+  data_profile: Array<{
+    symbol: string;
+    vendor: string;
+    requested_start: string;
+    requested_end: string;
+    first_bar_date: string;
+    last_bar_date: string;
+    bar_count: number;
+    latest_close: number;
+  }>;
+  steps: Array<{
+    order: number;
+    name: string;
+    input: string;
+    method: string;
+    output: string;
+  }>;
+  decisions: Array<{
+    area: string;
+    decision: string;
+    rationale: string;
+  }>;
   symbols_result: Array<{
     symbol: string;
     vendor: string;
     bar_count: number;
+    first_date: string;
+    last_date: string;
     latest_close: number;
     latest_signal: number;
     sharpe: number;

@@ -22,6 +22,7 @@
 - Experiment comparison and strategy promotion UI surfaces are implemented and locally verified.
 - Observability metrics, audit export, and deployment runbook polish are implemented and locally verified.
 - Equity/ETF live online-data research use case is implemented and locally verified with deterministic tests.
+- Experiment run detail UI now shows data used, workflow steps, and decisions/rationales.
 
 ## Locked Decisions
 
@@ -75,3 +76,4 @@
 - 2026-07-19: Implemented web UI experiment comparison and strategy promotion surfaces with compact comparison metrics, promotion gates, responsive styling, and updated Vitest coverage.
 - 2026-07-19: Implemented observability/audit/deployment polish with ops metrics, JSON audit export, deployment runbook, tests, and regenerated OpenAPI schema.
 - 2026-07-19: Implemented the first end-to-end equity/ETF live online-data research workflow with Stooq to Yahoo-compatible vendor fallback, data mining, signal generation, vector backtests, long-only portfolio construction, API route, docs, tests, regenerated OpenAPI schema, and a successful SPY/QQQ/IWM online-data smoke test.
+- 2026-07-19: Added experiment detail trail fields and UI sections for data used, steps followed, decisions made, backtest results, and portfolio construction diagnostics.

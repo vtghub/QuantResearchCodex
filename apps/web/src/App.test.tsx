@@ -50,11 +50,49 @@ describe("App", () => {
         new Response(
           JSON.stringify({
             data_vendors: ["yahoo-finance-compatible"],
+            dataset_checksum: "sha256:test",
+            data_profile: [
+              {
+                symbol: "SPY",
+                vendor: "yahoo-finance-compatible",
+                requested_start: "20240101",
+                requested_end: "20241231",
+                first_bar_date: "2024-01-02",
+                last_bar_date: "2024-12-31",
+                bar_count: 251,
+                latest_close: 586.2
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                name: "Fetch market data",
+                input: "SPY from 20240101 to 20241231",
+                method: "Try Stooq, then Yahoo-compatible.",
+                output: "Daily OHLCV bars."
+              },
+              {
+                order: 2,
+                name: "Generate signals",
+                input: "Close prices.",
+                method: "Moving-average crossover.",
+                output: "Binary exposure signal."
+              }
+            ],
+            decisions: [
+              {
+                area: "Data vendor",
+                decision: "Used yahoo-finance-compatible for this run.",
+                rationale: "Fallback returned usable bars."
+              }
+            ],
             symbols_result: [
               {
                 symbol: "SPY",
                 vendor: "yahoo-finance-compatible",
                 bar_count: 251,
+                first_date: "2024-01-02",
+                last_date: "2024-12-31",
                 latest_close: 586.2,
                 latest_signal: 1,
                 sharpe: 0.42,
@@ -83,7 +121,12 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: "Run SPY/QQQ/IWM" }));
 
     expect(await screen.findByText("Vendor: yahoo-finance-compatible")).toBeTruthy();
-    expect(screen.getByText("586.20")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Data used" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Steps followed" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Decisions made" })).toBeTruthy();
+    expect(screen.getByText("Fetch market data")).toBeTruthy();
+    expect(screen.getByText("Fallback returned usable bars.")).toBeTruthy();
+    expect(screen.getAllByText("586.20").length).toBeGreaterThan(1);
     expect(screen.getByText("100.00%")).toBeTruthy();
   });
 

@@ -110,17 +110,58 @@ function EquityEtfUseCase() {
       {result && (
         <div className="use-case-results">
           <p className="use-case-note">Vendor: {result.data_vendors.join(", ")}</p>
+          <div className="detail-section">
+            <h4>Data used</h4>
+            <DataTable
+              rows={result.data_profile.map((row) => ({
+                Symbol: row.symbol,
+                Vendor: row.vendor,
+                Requested: `${row.requested_start}-${row.requested_end}`,
+                Available: `${row.first_bar_date}-${row.last_bar_date}`,
+                Bars: String(row.bar_count),
+                Close: row.latest_close.toFixed(2)
+              }))}
+            />
+          </div>
+          <div className="detail-section">
+            <h4>Steps followed</h4>
+            <DataTable
+              rows={result.steps.map((row) => ({
+                Step: String(row.order),
+                Name: row.name,
+                Input: row.input,
+                Method: row.method,
+                Output: row.output
+              }))}
+            />
+          </div>
+          <div className="detail-section">
+            <h4>Decisions made</h4>
+            <DataTable
+              rows={result.decisions.map((row) => ({
+                Area: row.area,
+                Decision: row.decision,
+                Rationale: row.rationale
+              }))}
+            />
+          </div>
+          <div className="detail-section">
+            <h4>Backtest results</h4>
           <DataTable
             rows={result.symbols_result.map((row) => ({
               Symbol: row.symbol,
               Vendor: row.vendor,
               Bars: String(row.bar_count),
+              Range: `${row.first_date}-${row.last_date}`,
               Close: row.latest_close.toFixed(2),
               Signal: row.latest_signal.toFixed(0),
               Sharpe: row.sharpe.toFixed(3),
               Drawdown: `${(row.max_drawdown * 100).toFixed(1)}%`
             }))}
           />
+          </div>
+          <div className="detail-section">
+            <h4>Portfolio construction</h4>
           <DataTable
             rows={result.allocations.map((row) => ({
               Symbol: row.symbol,
@@ -130,6 +171,7 @@ function EquityEtfUseCase() {
               Volatility: `${(row.volatility * 100).toFixed(1)}%`
             }))}
           />
+          </div>
         </div>
       )}
     </section>

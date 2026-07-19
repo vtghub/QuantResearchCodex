@@ -888,6 +888,13 @@
             "title": "Cash Weight",
             "type": "number"
           },
+          "data_profile": {
+            "items": {
+              "$ref": "#/components/schemas/ExperimentDataProfile"
+            },
+            "title": "Data Profile",
+            "type": "array"
+          },
           "data_vendors": {
             "items": {
               "type": "string"
@@ -898,6 +905,13 @@
           "dataset_checksum": {
             "title": "Dataset Checksum",
             "type": "string"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/ExperimentDecision"
+            },
+            "title": "Decisions",
+            "type": "array"
           },
           "mining_summary": {
             "additionalProperties": {
@@ -912,6 +926,13 @@
             },
             "title": "Mining Summary",
             "type": "object"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/ExperimentStep"
+            },
+            "title": "Steps",
+            "type": "array"
           },
           "symbols": {
             "items": {
@@ -946,6 +967,9 @@
           "symbols",
           "dataset_checksum",
           "mining_summary",
+          "data_profile",
+          "steps",
+          "decisions",
           "symbols_result",
           "allocations",
           "cash_weight"
@@ -966,6 +990,14 @@
           "bar_count": {
             "title": "Bar Count",
             "type": "integer"
+          },
+          "first_date": {
+            "title": "First Date",
+            "type": "string"
+          },
+          "last_date": {
+            "title": "Last Date",
+            "type": "string"
           },
           "latest_close": {
             "title": "Latest Close",
@@ -1004,6 +1036,8 @@
           "symbol",
           "vendor",
           "bar_count",
+          "first_date",
+          "last_date",
           "latest_close",
           "latest_signal",
           "total_return",
@@ -1014,6 +1048,110 @@
           "turnover"
         ],
         "title": "EquityEtfSymbolResult",
+        "type": "object"
+      },
+      "ExperimentDataProfile": {
+        "properties": {
+          "bar_count": {
+            "title": "Bar Count",
+            "type": "integer"
+          },
+          "first_bar_date": {
+            "title": "First Bar Date",
+            "type": "string"
+          },
+          "last_bar_date": {
+            "title": "Last Bar Date",
+            "type": "string"
+          },
+          "latest_close": {
+            "title": "Latest Close",
+            "type": "number"
+          },
+          "requested_end": {
+            "title": "Requested End",
+            "type": "string"
+          },
+          "requested_start": {
+            "title": "Requested Start",
+            "type": "string"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "vendor": {
+            "title": "Vendor",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "vendor",
+          "requested_start",
+          "requested_end",
+          "first_bar_date",
+          "last_bar_date",
+          "bar_count",
+          "latest_close"
+        ],
+        "title": "ExperimentDataProfile",
+        "type": "object"
+      },
+      "ExperimentDecision": {
+        "properties": {
+          "area": {
+            "title": "Area",
+            "type": "string"
+          },
+          "decision": {
+            "title": "Decision",
+            "type": "string"
+          },
+          "rationale": {
+            "title": "Rationale",
+            "type": "string"
+          }
+        },
+        "required": [
+          "area",
+          "decision",
+          "rationale"
+        ],
+        "title": "ExperimentDecision",
+        "type": "object"
+      },
+      "ExperimentStep": {
+        "properties": {
+          "input": {
+            "title": "Input",
+            "type": "string"
+          },
+          "method": {
+            "title": "Method",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "order": {
+            "title": "Order",
+            "type": "integer"
+          },
+          "output": {
+            "title": "Output",
+            "type": "string"
+          }
+        },
+        "required": [
+          "order",
+          "name",
+          "input",
+          "method",
+          "output"
+        ],
+        "title": "ExperimentStep",
         "type": "object"
       },
       "HTTPValidationError": {

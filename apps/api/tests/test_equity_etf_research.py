@@ -41,6 +41,9 @@ def test_equity_etf_research_service_runs_end_to_end() -> None:
     assert response.asset_class == "equity_etf"
     assert response.data_vendors == ["stooq"]
     assert response.dataset_checksum.startswith("sha256:")
+    assert response.data_profile[0].first_bar_date == "2024-01-01"
+    assert response.steps[0].name == "Fetch market data"
+    assert response.decisions[0].area == "Data vendor"
     assert len(response.symbols_result) == 2
     assert round(sum(allocation.weight for allocation in response.allocations), 6) == 1.0
 
@@ -64,3 +67,4 @@ def test_equity_etf_research_endpoint_is_role_gated(monkeypatch) -> None:
     assert viewer.status_code == 403
     assert researcher.status_code == 200
     assert researcher.json()["symbols"] == ["SPY"]
+    assert researcher.json()["steps"][2]["name"] == "Generate signals"

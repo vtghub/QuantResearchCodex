@@ -60,9 +60,24 @@ The response includes:
 - `data_vendors`: vendors used after fallback resolution.
 - `dataset_checksum`: deterministic checksum over the request and resulting metrics.
 - `mining_summary`: signal and optimization methods.
+- `data_profile`: vendor, requested range, available range, bar count, and latest close per symbol.
+- `steps`: ordered workflow trail covering data fetch, mining, signal generation, backtest, and portfolio construction.
+- `decisions`: human-readable decisions and rationales made during the run.
 - `symbols_result`: per-symbol bar counts, latest close, signal, return, volatility, Sharpe, drawdown, and turnover.
 - `allocations`: long-only portfolio weights.
 - `cash_weight`: unallocated portfolio cash.
+
+## UI Location
+
+Open the web console, go to **Experiments**, and run **Equity/ETF live-data research**.
+
+After the run completes, the UI displays:
+
+- **Data used**: symbols, vendors, requested date range, available bar range, bar counts, and latest close.
+- **Steps followed**: each workflow step, input, method, and output.
+- **Decisions made**: data-vendor, signal, portfolio, and cash decisions with rationales.
+- **Backtest results**: per-symbol metrics.
+- **Portfolio construction**: final weights and optimization diagnostics.
 
 ## Current Strategy Logic
 

@@ -346,6 +346,17 @@ button {
   gap: 12px;
 }
 
+.detail-section {
+  display: grid;
+  gap: 8px;
+}
+
+.detail-section h4 {
+  margin: 0;
+  color: #172026;
+  font-size: 14px;
+}
+
 table {
   width: 100%;
   min-width: 620px;

@@ -276,6 +276,8 @@ class EquityEtfSymbolResult(BaseModel):
     symbol: str
     vendor: str
     bar_count: int
+    first_date: str
+    last_date: str
     latest_close: float
     latest_signal: float
     total_return: float
@@ -294,6 +296,31 @@ class PortfolioAllocation(BaseModel):
     volatility: float
 
 
+class ExperimentDataProfile(BaseModel):
+    symbol: str
+    vendor: str
+    requested_start: str
+    requested_end: str
+    first_bar_date: str
+    last_bar_date: str
+    bar_count: int
+    latest_close: float
+
+
+class ExperimentStep(BaseModel):
+    order: int
+    name: str
+    input: str
+    method: str
+    output: str
+
+
+class ExperimentDecision(BaseModel):
+    area: str
+    decision: str
+    rationale: str
+
+
 class EquityEtfResearchResponse(BaseModel):
     tenant_id: UUID
     workspace_id: UUID
@@ -302,6 +329,9 @@ class EquityEtfResearchResponse(BaseModel):
     symbols: list[str]
     dataset_checksum: str
     mining_summary: dict[str, str | int]
+    data_profile: list[ExperimentDataProfile]
+    steps: list[ExperimentStep]
+    decisions: list[ExperimentDecision]
     symbols_result: list[EquityEtfSymbolResult]
     allocations: list[PortfolioAllocation]
     cash_weight: float
