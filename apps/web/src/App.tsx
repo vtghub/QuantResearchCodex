@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   CheckCircle2,
+  FlaskConical,
   GitCompareArrows,
   GitPullRequestArrow,
   Lock,
@@ -9,7 +10,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 
-import { fetchConsolePayload } from "./apiClient";
+import { fetchConsolePayload, runEquityEtfResearch, type EquityEtfResearchResult } from "./apiClient";
 import {
   fallbackConsolePayload,
   sectionIcons,
@@ -74,26 +75,90 @@ const promotionGates = [
   { label: "Live approval", state: "Blocked", detail: "Live trading disabled" }
 ];
 
+function EquityEtfUseCase() {
+  const [status, setStatus] = useState<"idle" | "running" | "complete" | "error">("idle");
+  const [result, setResult] = useState<EquityEtfResearchResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  function runUseCase() {
+    setStatus("running");
+    setError(null);
+    runEquityEtfResearch()
+      .then((payload) => {
+        setResult(payload);
+        setStatus("complete");
+      })
+      .catch((exc: Error) => {
+        setError(exc.message);
+        setStatus("error");
+      });
+  }
+
+  return (
+    <section className="insight-panel" aria-label="Equity ETF live research use case">
+      <div className="insight-heading">
+        <FlaskConical aria-hidden="true" />
+        <h3>Equity/ETF live-data research</h3>
+        <button className="run-use-case" disabled={status === "running"} onClick={runUseCase} type="button">
+          {status === "running" ? "Running" : "Run SPY/QQQ/IWM"}
+        </button>
+      </div>
+      {status === "idle" && (
+        <p className="use-case-note">Fetches free online bars, generates signals, backtests, and builds weights.</p>
+      )}
+      {status === "error" && <p className="use-case-error">{error}</p>}
+      {result && (
+        <div className="use-case-results">
+          <p className="use-case-note">Vendor: {result.data_vendors.join(", ")}</p>
+          <DataTable
+            rows={result.symbols_result.map((row) => ({
+              Symbol: row.symbol,
+              Vendor: row.vendor,
+              Bars: String(row.bar_count),
+              Close: row.latest_close.toFixed(2),
+              Signal: row.latest_signal.toFixed(0),
+              Sharpe: row.sharpe.toFixed(3),
+              Drawdown: `${(row.max_drawdown * 100).toFixed(1)}%`
+            }))}
+          />
+          <DataTable
+            rows={result.allocations.map((row) => ({
+              Symbol: row.symbol,
+              Weight: `${(row.weight * 100).toFixed(2)}%`,
+              Signal: row.signal.toFixed(0),
+              Momentum: row.momentum_score.toFixed(3),
+              Volatility: `${(row.volatility * 100).toFixed(1)}%`
+            }))}
+          />
+        </div>
+      )}
+    </section>
+  );
+}
+
 function PanelDetail({ activeKey }: { activeKey: SectionKey }) {
   if (activeKey === "experiments") {
     return (
-      <section className="insight-panel" aria-label="Experiment comparison">
-        <div className="insight-heading">
-          <GitCompareArrows aria-hidden="true" />
-          <h3>Experiment comparison</h3>
-        </div>
-        <div className="comparison-grid">
-          {experimentComparisons.map((experiment) => (
-            <div className="comparison-row" key={experiment.name}>
-              <strong>{experiment.name}</strong>
-              <span>Sharpe {experiment.sharpe}</span>
-              <span>Max DD {experiment.drawdown}</span>
-              <span>Turnover {experiment.turnover}</span>
-              <em>{experiment.gate}</em>
-            </div>
-          ))}
-        </div>
-      </section>
+      <>
+        <section className="insight-panel" aria-label="Experiment comparison">
+          <div className="insight-heading">
+            <GitCompareArrows aria-hidden="true" />
+            <h3>Experiment comparison</h3>
+          </div>
+          <div className="comparison-grid">
+            {experimentComparisons.map((experiment) => (
+              <div className="comparison-row" key={experiment.name}>
+                <strong>{experiment.name}</strong>
+                <span>Sharpe {experiment.sharpe}</span>
+                <span>Max DD {experiment.drawdown}</span>
+                <span>Turnover {experiment.turnover}</span>
+                <em>{experiment.gate}</em>
+              </div>
+            ))}
+          </div>
+        </section>
+        <EquityEtfUseCase />
+      </>
     );
   }
 

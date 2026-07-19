@@ -40,6 +40,51 @@ describe("App", () => {
 
     expect(screen.getByRole("heading", { name: "Experiment comparison" })).toBeTruthy();
     expect(screen.getByText("Promote to paper review")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Equity/ETF live-data research" })).toBeTruthy();
+  });
+
+  it("runs the equity ETF use case from the experiments panel", async () => {
+    vi.mocked(globalThis.fetch)
+      .mockRejectedValueOnce(new Error("API offline"))
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data_vendors: ["yahoo-finance-compatible"],
+            symbols_result: [
+              {
+                symbol: "SPY",
+                vendor: "yahoo-finance-compatible",
+                bar_count: 251,
+                latest_close: 586.2,
+                latest_signal: 1,
+                sharpe: 0.42,
+                max_drawdown: -0.08,
+                turnover: 3.0
+              }
+            ],
+            allocations: [
+              {
+                symbol: "SPY",
+                weight: 1,
+                signal: 1,
+                momentum_score: 0.2,
+                volatility: 0.15
+              }
+            ],
+            cash_weight: 0
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
+    render(<App />);
+    await screen.findByText("Static fallback mode");
+    fireEvent.click(screen.getByRole("button", { name: "Experiments" }));
+    fireEvent.click(screen.getByRole("button", { name: "Run SPY/QQQ/IWM" }));
+
+    expect(await screen.findByText("Vendor: yahoo-finance-compatible")).toBeTruthy();
+    expect(screen.getByText("586.20")).toBeTruthy();
+    expect(screen.getByText("100.00%")).toBeTruthy();
   });
 
   it("hydrates console data from the API when available", async () => {

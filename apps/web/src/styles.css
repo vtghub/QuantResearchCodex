@@ -242,6 +242,7 @@ button {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .insight-heading h3 {
@@ -310,6 +311,39 @@ button {
 
 .gate-item p {
   margin: 0;
+}
+
+.run-use-case {
+  min-height: 34px;
+  border: 1px solid #0f766e;
+  border-radius: 6px;
+  background: #0f766e;
+  color: #ffffff;
+  cursor: pointer;
+  margin-left: auto;
+  padding: 6px 10px;
+  font-weight: 700;
+}
+
+.run-use-case:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.use-case-note,
+.use-case-error {
+  margin: 0;
+  color: #52636b;
+}
+
+.use-case-error {
+  color: #9f1239;
+  font-weight: 700;
+}
+
+.use-case-results {
+  display: grid;
+  gap: 12px;
 }
 
 table {
