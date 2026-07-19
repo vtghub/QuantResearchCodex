@@ -23,6 +23,7 @@ dev = [
   "pytest>=8.3",
   "pytest-asyncio>=0.23",
   "pytest-alembic>=0.11",
+  "pyyaml>=6.0",
   "ruff>=0.6"
 ]
 

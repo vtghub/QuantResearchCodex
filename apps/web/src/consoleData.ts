@@ -8,36 +8,10 @@ import {
   Users
 } from "lucide-react";
 
-export type SectionKey =
-  | "data"
-  | "experiments"
-  | "strategies"
-  | "portfolios"
-  | "risk"
-  | "audit"
-  | "users";
+import type { ConsoleResponse, SectionKey } from "./generated/apiClient";
 
-export type SectionMetric = {
-  key: SectionKey;
-  label: string;
-  value: string;
-  detail: string;
-};
-
-export type ConsolePanel = {
-  key: SectionKey;
-  title: string;
-  description: string;
-  action: string;
-  rows: Array<Record<string, string>>;
-};
-
-export type ConsolePayload = {
-  metrics: SectionMetric[];
-  panels: ConsolePanel[];
-  workspace_name: string;
-  verification_state: string;
-};
+export type ConsolePayload = ConsoleResponse;
+export type { SectionKey };
 
 export const sectionIcons = {
   data: Database,

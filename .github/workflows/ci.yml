@@ -21,6 +21,10 @@ jobs:
         run: uv run --project apps/api ruff check apps packages
       - name: Pytest
         run: uv run --project apps/api pytest apps/api/tests packages
+      - name: OpenAPI client drift
+        run: |
+          uv run --project apps/api python tools/generate_openapi_client.py
+          git diff --exit-code apps/web/src/generated
 
   frontend:
     runs-on: ubuntu-latest
