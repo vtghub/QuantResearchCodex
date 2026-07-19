@@ -12,7 +12,8 @@ def main() -> None:
     settings = get_settings()
     print(
         "QuantResearch worker placeholder started "
-        f"(env={settings.env}, redis={settings.redis_url})"
+        f"(env={settings.env}, redis={settings.redis_url}, "
+        f"job_store={job_queue.store.backend_name})"
     )
     asyncio.run(run_once())
 

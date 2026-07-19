@@ -65,6 +65,14 @@ def test_can_enqueue_and_run_ingestion_job() -> None:
     assert run_response.json()["result"]["provider"] == "stooq"
 
 
+def test_job_state_endpoint_reports_queue_counts() -> None:
+    response = client.get("/api/v1/jobs/state")
+
+    assert response.status_code == 200
+    assert response.json()["backend"] == "memory"
+    assert "queued" in response.json()
+
+
 def test_unknown_job_returns_not_found() -> None:
     response = client.post("/api/v1/jobs/missing/run")
 

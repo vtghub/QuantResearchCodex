@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     object_store_bucket: str = "quantresearch"
     live_trading_enabled: bool = False
     paper_order_max_notional: float = 100_000
+    job_store_backend: str = "memory"
+    job_state_file: str = ".quantresearch/jobs.json"
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:5173"])
 
 

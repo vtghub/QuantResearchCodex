@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from quantresearch_api.auth import auth_service, issue_token
 from quantresearch_api.brokers import BrokerSandboxGateError, broker_sandbox_service
-from quantresearch_api.jobs import JobKind, JobRecord, job_queue
+from quantresearch_api.jobs import JobKind, JobRecord, JobStateSummary, job_queue
 from quantresearch_api.risk import RiskGateError, risk_control_service
 from quantresearch_api.schemas import (
     ApprovalDecisionResponse,
@@ -486,6 +486,11 @@ async def console(context: ReadTenantDep) -> ConsoleResponse:
 @v1_router.get("/jobs", response_model=list[JobRecord])
 async def jobs(context: ReadTenantDep) -> list[JobRecord]:
     return job_queue.list(str(context.tenant_id))
+
+
+@v1_router.get("/jobs/state", response_model=JobStateSummary)
+async def job_state(context: ReadTenantDep) -> JobStateSummary:
+    return job_queue.state(str(context.tenant_id))
 
 
 @v1_router.post("/jobs/ingest", response_model=JobRecord, status_code=202)

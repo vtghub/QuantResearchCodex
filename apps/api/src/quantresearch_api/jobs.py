@@ -1,5 +1,7 @@
+import json
 from datetime import UTC, datetime
 from enum import StrEnum
+from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
@@ -44,30 +46,162 @@ class JobRecord(BaseModel):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
-class JobQueue:
+class JobStateSummary(BaseModel):
+    backend: str
+    total: int
+    queued: int
+    running: int
+    succeeded: int
+    failed: int
+
+
+class JobStoreUnavailable(RuntimeError):
+    """Raised when a configured durable job store cannot be reached."""
+
+
+class JobStore:
+    backend_name = "abstract"
+
+    def put(self, record: JobRecord) -> JobRecord:
+        raise NotImplementedError
+
+    def list(self, tenant_id: str | None = None) -> list[JobRecord]:
+        raise NotImplementedError
+
+    def get(self, job_id: str) -> JobRecord | None:
+        raise NotImplementedError
+
+
+class InMemoryJobStore(JobStore):
+    backend_name = "memory"
+
     def __init__(self) -> None:
         self._jobs: dict[str, JobRecord] = {}
 
-    def enqueue(self, record: JobRecord) -> JobRecord:
+    def put(self, record: JobRecord) -> JobRecord:
         self._jobs[record.id] = record
         return record
 
-    def list(self, tenant_id: str) -> list[JobRecord]:
-        return [job for job in self._jobs.values() if job.tenant_id == tenant_id]
+    def list(self, tenant_id: str | None = None) -> list[JobRecord]:
+        jobs = list(self._jobs.values())
+        if tenant_id is None:
+            return jobs
+        return [job for job in jobs if job.tenant_id == tenant_id]
 
     def get(self, job_id: str) -> JobRecord | None:
         return self._jobs.get(job_id)
 
+
+class JsonFileJobStore(JobStore):
+    backend_name = "json-file"
+
+    def __init__(self, path: str | Path) -> None:
+        self.path = Path(path)
+
+    def put(self, record: JobRecord) -> JobRecord:
+        jobs = {job.id: job for job in self.list()}
+        jobs[record.id] = record
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.path.write_text(
+            json.dumps(
+                [job.model_dump(mode="json") for job in jobs.values()],
+                indent=2,
+                sort_keys=True,
+            ),
+            encoding="utf-8",
+        )
+        return record
+
+    def list(self, tenant_id: str | None = None) -> list[JobRecord]:
+        if not self.path.exists():
+            return []
+        records = [
+            JobRecord.model_validate(item)
+            for item in json.loads(self.path.read_text(encoding="utf-8"))
+        ]
+        if tenant_id is None:
+            return records
+        return [job for job in records if job.tenant_id == tenant_id]
+
+    def get(self, job_id: str) -> JobRecord | None:
+        return next((job for job in self.list() if job.id == job_id), None)
+
+
+class RedisJobStore(JobStore):
+    backend_name = "redis"
+
+    def __init__(self, redis_url: str) -> None:
+        self.redis_url = redis_url
+
+    def _unavailable(self) -> None:
+        raise JobStoreUnavailable("Redis job store is configured but not connected yet.")
+
+    def put(self, record: JobRecord) -> JobRecord:
+        self._unavailable()
+
+    def list(self, tenant_id: str | None = None) -> list[JobRecord]:
+        self._unavailable()
+
+    def get(self, job_id: str) -> JobRecord | None:
+        self._unavailable()
+
+
+class PostgresJobStore(JobStore):
+    backend_name = "postgres"
+
+    def __init__(self, database_url: str) -> None:
+        self.database_url = database_url
+
+    def _unavailable(self) -> None:
+        raise JobStoreUnavailable("Postgres job store is configured but not connected yet.")
+
+    def put(self, record: JobRecord) -> JobRecord:
+        self._unavailable()
+
+    def list(self, tenant_id: str | None = None) -> list[JobRecord]:
+        self._unavailable()
+
+    def get(self, job_id: str) -> JobRecord | None:
+        self._unavailable()
+
+
+class JobQueue:
+    def __init__(self, store: JobStore | None = None) -> None:
+        self.store = store or InMemoryJobStore()
+
+    def enqueue(self, record: JobRecord) -> JobRecord:
+        return self.store.put(record)
+
+    def list(self, tenant_id: str) -> list[JobRecord]:
+        return self.store.list(tenant_id)
+
+    def get(self, job_id: str) -> JobRecord | None:
+        return self.store.get(job_id)
+
+    def state(self, tenant_id: str | None = None) -> JobStateSummary:
+        jobs = self.store.list(tenant_id)
+        return JobStateSummary(
+            backend=self.store.backend_name,
+            total=len(jobs),
+            queued=sum(job.status == JobStatus.QUEUED for job in jobs),
+            running=sum(job.status == JobStatus.RUNNING for job in jobs),
+            succeeded=sum(job.status == JobStatus.SUCCEEDED for job in jobs),
+            failed=sum(job.status == JobStatus.FAILED for job in jobs),
+        )
+
     async def run_next(self) -> JobRecord | None:
-        for job in self._jobs.values():
+        for job in sorted(self.store.list(), key=lambda queued: queued.created_at):
             if job.status == JobStatus.QUEUED:
                 return await self.run(job.id)
         return None
 
     async def run(self, job_id: str) -> JobRecord:
-        job = self._jobs[job_id]
+        job = self.store.get(job_id)
+        if job is None:
+            raise KeyError(job_id)
         job.status = JobStatus.RUNNING
         job.updated_at = datetime.now(UTC)
+        self.store.put(job)
         try:
             if job.kind == JobKind.INGEST_MARKET_DATA:
                 job.result = await run_ingestion_job(job.payload)
@@ -79,7 +213,27 @@ class JobQueue:
             job.error = str(exc)
         finally:
             job.updated_at = datetime.now(UTC)
+            self.store.put(job)
         return job
+
+
+def build_job_store(
+    backend: str,
+    *,
+    job_state_file: str,
+    redis_url: str,
+    database_url: str,
+) -> JobStore:
+    normalized = backend.lower()
+    if normalized == "memory":
+        return InMemoryJobStore()
+    if normalized in {"json", "json-file", "file"}:
+        return JsonFileJobStore(job_state_file)
+    if normalized == "redis":
+        return RedisJobStore(redis_url)
+    if normalized in {"postgres", "postgresql"}:
+        return PostgresJobStore(database_url)
+    raise ValueError(f"Unsupported job store backend: {backend}")
 
 
 def run_research_job(payload: dict[str, Any]) -> dict[str, Any]:
