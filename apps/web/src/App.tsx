@@ -306,7 +306,7 @@ export function App() {
           </div>
           <div>
             <h2>Next gated milestone</h2>
-            <p>Connect API data, migrations, generated OpenAPI client, and Compose integration tests.</p>
+            <p>Harden persistence, secret stores, production auth, and Docker/Helm validation.</p>
           </div>
           <div>
             <h2>Verification state</h2>
