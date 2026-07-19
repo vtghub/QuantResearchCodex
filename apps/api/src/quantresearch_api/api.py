@@ -5,12 +5,14 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from quantresearch_api.auth import auth_service, issue_token
 from quantresearch_api.brokers import BrokerSandboxGateError, broker_sandbox_service
+from quantresearch_api.catalog import catalog_service
 from quantresearch_api.jobs import JobKind, JobRecord, JobStateSummary, job_queue
 from quantresearch_api.risk import RiskGateError, risk_control_service
 from quantresearch_api.schemas import (
     ApprovalDecisionResponse,
     ApprovalRecord,
     ApprovalRequest,
+    ArtifactVersion,
     AuditRecord,
     AuthProvider,
     AuthTokenResponse,
@@ -19,6 +21,9 @@ from quantresearch_api.schemas import (
     ConsoleMetric,
     ConsolePanel,
     ConsoleResponse,
+    CreateArtifactVersionRequest,
+    CreateDatasetManifestRequest,
+    DatasetStorageManifest,
     EnqueueIngestionRequest,
     EnqueueResearchRequest,
     HealthResponse,
@@ -152,11 +157,34 @@ async def list_workspaces(context: ReadTenantDep) -> list[ResourceSummary]:
 
 @v1_router.get("/data/catalog", response_model=list[ResourceSummary])
 async def data_catalog(context: ReadTenantDep) -> list[ResourceSummary]:
-    return [
+    seeded = [
         _resource(context, ResourceKind.DATASET, "US Equities Daily Bars", "stubbed"),
         _resource(context, ResourceKind.DATASET, "Crypto Spot Daily Bars", "stubbed"),
         _resource(context, ResourceKind.DATASET, "ECB FX Reference Rates", "stubbed"),
     ]
+    stored = [
+        _resource(
+            context,
+            ResourceKind.DATASET,
+            f"{manifest.provider}:{','.join(manifest.symbols)}",
+            "manifested",
+        )
+        for manifest in catalog_service.datasets(context)
+    ]
+    return [*seeded, *stored]
+
+
+@v1_router.get("/data/manifests", response_model=list[DatasetStorageManifest])
+async def dataset_manifests(context: ReadTenantDep) -> list[DatasetStorageManifest]:
+    return catalog_service.datasets(context)
+
+
+@v1_router.post("/data/manifests", response_model=DatasetStorageManifest, status_code=201)
+async def create_dataset_manifest(
+    request: CreateDatasetManifestRequest,
+    context: ResearchTenantDep,
+) -> DatasetStorageManifest:
+    return catalog_service.create_dataset(request, context)
 
 
 @v1_router.get("/research/runs", response_model=list[ResourceSummary])
@@ -182,6 +210,19 @@ async def strategies(context: ReadTenantDep) -> list[StrategySummary]:
             status="draft",
         )
     ]
+
+
+@v1_router.get("/artifacts", response_model=list[ArtifactVersion])
+async def artifacts(context: ReadTenantDep) -> list[ArtifactVersion]:
+    return catalog_service.artifacts(context)
+
+
+@v1_router.post("/artifacts", response_model=ArtifactVersion, status_code=201)
+async def create_artifact(
+    request: CreateArtifactVersionRequest,
+    context: ResearchTenantDep,
+) -> ArtifactVersion:
+    return catalog_service.create_artifact(request, context)
 
 
 @v1_router.get("/backtests", response_model=list[ResourceSummary])

@@ -191,3 +191,55 @@ class ApprovalRecord(BaseModel):
 class ApprovalDecisionResponse(BaseModel):
     record: ApprovalRecord
     gates: list[str]
+
+
+class CreateDatasetManifestRequest(BaseModel):
+    provider: str = Field(min_length=2)
+    symbols: list[str] = Field(min_length=1)
+    asset_class: AssetClass = AssetClass.EQUITY
+    storage_uri: str = Field(pattern="^(s3|az|file|memory)://.+")
+    storage_format: str = Field(pattern="^(parquet|csv|json)$")
+    checksum: str = Field(pattern="^sha256:.+")
+    row_count: int = Field(ge=0)
+    entitlement: str = "free-first"
+    transform_version: str = "raw"
+
+
+class DatasetStorageManifest(BaseModel):
+    id: str
+    tenant_id: UUID
+    workspace_id: UUID
+    provider: str
+    symbols: list[str]
+    asset_class: AssetClass
+    storage_uri: str
+    storage_format: str
+    checksum: str
+    row_count: int
+    entitlement: str
+    transform_version: str
+    created_at: datetime
+
+
+class CreateArtifactVersionRequest(BaseModel):
+    artifact_type: str = Field(pattern="^(strategy|backtest|model|report)$")
+    name: str = Field(min_length=2)
+    version: str = Field(pattern=r"^\d+\.\d+\.\d+$")
+    source_run_id: str | None = None
+    storage_uri: str = Field(pattern="^(s3|az|file|memory)://.+")
+    checksum: str = Field(pattern="^sha256:.+")
+    metrics: dict[str, float] = Field(default_factory=dict)
+
+
+class ArtifactVersion(BaseModel):
+    id: str
+    tenant_id: UUID
+    workspace_id: UUID
+    artifact_type: str
+    name: str
+    version: str
+    source_run_id: str | None
+    storage_uri: str
+    checksum: str
+    metrics: dict[str, float]
+    created_at: datetime
