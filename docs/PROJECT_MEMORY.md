@@ -4,7 +4,7 @@
 
 - Repository began empty on `main`.
 - Git remote `origin` is `https://github.com/vtghub/QuantResearchCodex`.
-- Implementation work is on `feature/job-orchestration-ingestion`.
+- Implementation work is on `feature/research-backtest-engine`.
 - The approved Terra plan is in `docs/IMPLEMENTATION_PLAN.md`.
 - First scaffold milestone has been implemented and locally verified.
 - The first web UI navigation feature slice is implemented and locally verified.
@@ -12,6 +12,7 @@
 - Database model and Alembic migration foundation is implemented and locally verified.
 - OpenAPI generated client and contract drift checks are implemented and locally verified.
 - Job orchestration and adapter-backed ingestion jobs are implemented and locally verified.
+- Vectorized research and backtest execution is implemented and locally verified.
 
 ## Locked Decisions
 
@@ -41,7 +42,7 @@
 
 ## Next Milestone
 
-- Add vectorized research and backtest execution.
+- Add auth/RBAC persistence and tenant enforcement.
 
 ## Change Log
 
@@ -55,3 +56,4 @@
 - 2026-07-18: Implemented database foundation with tenant-aware SQLAlchemy models, Alembic async migration config, initial schema migration, metadata tests, and offline SQL migration validation.
 - 2026-07-18: Implemented generated OpenAPI client, committed OpenAPI schema, wired the web console to generated types, and added CI drift plus Compose contract checks.
 - 2026-07-18: Implemented job orchestration and ingestion phase with queue contracts, adapter-backed ingestion execution, job API endpoints, worker run-once hook, tests, and regenerated OpenAPI schema.
+- 2026-07-18: Implemented vectorized research and backtest phase with deterministic moving-average signals, cost-aware portfolio metrics, job integration, and focused tests.

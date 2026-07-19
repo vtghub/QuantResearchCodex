@@ -37,3 +37,5 @@ async def test_research_job_is_queued_and_executed() -> None:
     assert result is not None
     assert result.status == JobStatus.SUCCEEDED
     assert result.result["strategy"] == "momentum"
+    assert result.result["status"] == "completed"
+    assert "equity_curve" in result.result

@@ -11,6 +11,12 @@ from quantresearch_adapters.market_data import (
     StooqProvider,
     YahooFinanceCompatibleProvider,
 )
+from quantresearch_core.backtesting import (
+    BacktestInput,
+    moving_average_signals,
+    returns_from_prices,
+    run_vector_backtest,
+)
 
 
 class JobKind(StrEnum):
@@ -77,10 +83,28 @@ class JobQueue:
 
 
 def run_research_job(payload: dict[str, Any]) -> dict[str, Any]:
+    prices = [float(value) for value in payload.get("prices", [100, 101, 103, 102, 105, 107])]
+    fast_window = int(payload.get("fast_window", 2))
+    slow_window = int(payload.get("slow_window", 3))
+    signals = moving_average_signals(prices, fast_window=fast_window, slow_window=slow_window)
+    result = run_vector_backtest(
+        BacktestInput(
+            returns=returns_from_prices(prices),
+            signals=signals[1:],
+            fee_bps=float(payload.get("fee_bps", 1.0)),
+            slippage_bps=float(payload.get("slippage_bps", 1.0)),
+        )
+    )
     return {
-        "status": "stubbed",
+        "status": "completed",
         "strategy": payload.get("strategy", "research-template"),
-        "message": "Research execution will connect to the backtest engine phase.",
+        "total_return": result.total_return,
+        "annualized_return": result.annualized_return,
+        "annualized_volatility": result.annualized_volatility,
+        "sharpe": result.sharpe,
+        "max_drawdown": result.max_drawdown,
+        "turnover": result.turnover,
+        "equity_curve": result.equity_curve,
     }
 
 
