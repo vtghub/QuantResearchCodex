@@ -90,3 +90,30 @@ class EnqueueResearchRequest(BaseModel):
     strategy: str = "research-template"
     dataset_id: str | None = None
     parameters: dict[str, str] = Field(default_factory=dict)
+
+
+class RegisterUserRequest(BaseModel):
+    email: str
+    password: str
+    display_name: str
+    role: str = "researcher"
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+class AuthTokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    role: str
+    tenant_id: UUID
+    workspace_id: UUID
+
+
+class AuthProvider(BaseModel):
+    name: str
+    type: str
+    enabled: bool
+    status: str

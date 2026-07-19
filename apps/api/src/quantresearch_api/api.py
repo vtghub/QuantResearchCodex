@@ -2,15 +2,20 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from quantresearch_api.auth import auth_service, issue_token
 from quantresearch_api.jobs import JobKind, JobRecord, job_queue
 from quantresearch_api.schemas import (
     AuditRecord,
+    AuthProvider,
+    AuthTokenResponse,
     ConsoleMetric,
     ConsolePanel,
     ConsoleResponse,
     EnqueueIngestionRequest,
     EnqueueResearchRequest,
     HealthResponse,
+    LoginRequest,
+    RegisterUserRequest,
     ResourceKind,
     ResourceSummary,
     StrategySummary,
@@ -79,6 +84,50 @@ def _resource(
 @v1_router.get("/identity/me", response_model=TenantContext)
 async def identity_me(context: TenantDep) -> TenantContext:
     return context
+
+
+@v1_router.get("/auth/providers", response_model=list[AuthProvider])
+async def auth_providers() -> list[AuthProvider]:
+    return [
+        AuthProvider(name="local", type="password", enabled=True, status="active"),
+        AuthProvider(name="oidc", type="oidc", enabled=False, status="configured-hook"),
+        AuthProvider(name="oauth", type="oauth", enabled=False, status="configured-hook"),
+    ]
+
+
+@v1_router.post("/auth/register", response_model=AuthTokenResponse, status_code=201)
+async def register_user(
+    request: RegisterUserRequest,
+    _context: AdminTenantDep,
+) -> AuthTokenResponse:
+    try:
+        user = auth_service.register(
+            email=request.email,
+            password=request.password,
+            display_name=request.display_name,
+            role=request.role,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return AuthTokenResponse(
+        access_token=issue_token(user),
+        role=user.role,
+        tenant_id=user.tenant_id,
+        workspace_id=user.workspace_id,
+    )
+
+
+@v1_router.post("/auth/login", response_model=AuthTokenResponse)
+async def login(request: LoginRequest) -> AuthTokenResponse:
+    user = auth_service.authenticate(request.email, request.password)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    return AuthTokenResponse(
+        access_token=issue_token(user),
+        role=user.role,
+        tenant_id=user.tenant_id,
+        workspace_id=user.workspace_id,
+    )
 
 
 @v1_router.get("/workspaces", response_model=list[ResourceSummary])
