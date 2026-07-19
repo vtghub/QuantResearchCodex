@@ -47,3 +47,25 @@ def test_console_endpoint_returns_metrics_and_panels() -> None:
     assert body["workspace_name"] == "Default Research Workspace"
     assert body["metrics"][0]["key"] == "data"
     assert body["panels"][0]["title"] == "Market data catalog"
+
+
+def test_can_enqueue_and_run_ingestion_job() -> None:
+    response = client.post(
+        "/api/v1/jobs/ingest",
+        json={"provider": "stooq", "symbols": ["SPY"]},
+    )
+
+    assert response.status_code == 202
+    job_id = response.json()["id"]
+
+    run_response = client.post(f"/api/v1/jobs/{job_id}/run")
+
+    assert run_response.status_code == 200
+    assert run_response.json()["status"] == "succeeded"
+    assert run_response.json()["result"]["provider"] == "stooq"
+
+
+def test_unknown_job_returns_not_found() -> None:
+    response = client.post("/api/v1/jobs/missing/run")
+
+    assert response.status_code == 404

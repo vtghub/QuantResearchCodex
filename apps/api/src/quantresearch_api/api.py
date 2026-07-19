@@ -1,12 +1,15 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
+from quantresearch_api.jobs import JobKind, JobRecord, job_queue
 from quantresearch_api.schemas import (
     AuditRecord,
     ConsoleMetric,
     ConsolePanel,
     ConsoleResponse,
+    EnqueueIngestionRequest,
+    EnqueueResearchRequest,
     HealthResponse,
     ResourceKind,
     ResourceSummary,
@@ -315,6 +318,48 @@ async def console(context: TenantDep) -> ConsoleResponse:
             ),
         ],
     )
+
+
+@v1_router.get("/jobs", response_model=list[JobRecord])
+async def jobs(context: TenantDep) -> list[JobRecord]:
+    return job_queue.list(str(context.tenant_id))
+
+
+@v1_router.post("/jobs/ingest", response_model=JobRecord, status_code=202)
+async def enqueue_ingestion(
+    request: EnqueueIngestionRequest,
+    context: TenantDep,
+) -> JobRecord:
+    return job_queue.enqueue(
+        JobRecord(
+            kind=JobKind.INGEST_MARKET_DATA,
+            tenant_id=str(context.tenant_id),
+            workspace_id=str(context.workspace_id),
+            payload=request.model_dump(),
+        )
+    )
+
+
+@v1_router.post("/jobs/research", response_model=JobRecord, status_code=202)
+async def enqueue_research(
+    request: EnqueueResearchRequest,
+    context: TenantDep,
+) -> JobRecord:
+    return job_queue.enqueue(
+        JobRecord(
+            kind=JobKind.RUN_RESEARCH,
+            tenant_id=str(context.tenant_id),
+            workspace_id=str(context.workspace_id),
+            payload=request.model_dump(),
+        )
+    )
+
+
+@v1_router.post("/jobs/{job_id}/run", response_model=JobRecord)
+async def run_job(job_id: str) -> JobRecord:
+    if job_queue.get(job_id) is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return await job_queue.run(job_id)
 
 
 api_router.include_router(v1_router)

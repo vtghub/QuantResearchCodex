@@ -4,13 +4,14 @@
 
 - Repository began empty on `main`.
 - Git remote `origin` is `https://github.com/vtghub/QuantResearchCodex`.
-- Implementation work is on `feature/openapi-client-contracts`.
+- Implementation work is on `feature/job-orchestration-ingestion`.
 - The approved Terra plan is in `docs/IMPLEMENTATION_PLAN.md`.
 - First scaffold milestone has been implemented and locally verified.
 - The first web UI navigation feature slice is implemented and locally verified.
 - API-backed console hydration is implemented and locally verified.
 - Database model and Alembic migration foundation is implemented and locally verified.
 - OpenAPI generated client and contract drift checks are implemented and locally verified.
+- Job orchestration and adapter-backed ingestion jobs are implemented and locally verified.
 
 ## Locked Decisions
 
@@ -40,7 +41,7 @@
 
 ## Next Milestone
 
-- Add job orchestration and real ingestion jobs.
+- Add vectorized research and backtest execution.
 
 ## Change Log
 
@@ -53,3 +54,4 @@
 - 2026-07-18: Implemented API-backed console feature with `/api/v1/console`, typed web client, static fallback mode, and browser/unit/API coverage.
 - 2026-07-18: Implemented database foundation with tenant-aware SQLAlchemy models, Alembic async migration config, initial schema migration, metadata tests, and offline SQL migration validation.
 - 2026-07-18: Implemented generated OpenAPI client, committed OpenAPI schema, wired the web console to generated types, and added CI drift plus Compose contract checks.
+- 2026-07-18: Implemented job orchestration and ingestion phase with queue contracts, adapter-backed ingestion execution, job API endpoints, worker run-once hook, tests, and regenerated OpenAPI schema.

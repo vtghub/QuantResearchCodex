@@ -79,3 +79,14 @@ class ConsoleResponse(BaseModel):
     panels: list[ConsolePanel]
     workspace_name: str = "Default Research Workspace"
     verification_state: str = "API-backed console data loaded."
+
+
+class EnqueueIngestionRequest(BaseModel):
+    provider: str = "stooq"
+    symbols: list[str] = Field(default_factory=lambda: ["SPY"])
+
+
+class EnqueueResearchRequest(BaseModel):
+    strategy: str = "research-template"
+    dataset_id: str | None = None
+    parameters: dict[str, str] = Field(default_factory=dict)
