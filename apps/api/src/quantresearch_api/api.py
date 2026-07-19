@@ -4,6 +4,9 @@ from fastapi import APIRouter, Depends
 
 from quantresearch_api.schemas import (
     AuditRecord,
+    ConsoleMetric,
+    ConsolePanel,
+    ConsoleResponse,
     HealthResponse,
     ResourceKind,
     ResourceSummary,
@@ -123,6 +126,195 @@ async def audit_records(context: TenantDep) -> list[AuditRecord]:
 @v1_router.get("/admin/users", response_model=list[ResourceSummary])
 async def users(context: TenantDep) -> list[ResourceSummary]:
     return [_resource(context, ResourceKind.USER, "Platform Admin", "active")]
+
+
+@v1_router.get("/console", response_model=ConsoleResponse)
+async def console(context: TenantDep) -> ConsoleResponse:
+    return ConsoleResponse(
+        metrics=[
+            ConsoleMetric(key="data", label="Data Health", value="3", detail="adapters ready"),
+            ConsoleMetric(key="experiments", label="Experiments", value="1", detail="queued run"),
+            ConsoleMetric(
+                key="strategies",
+                label="Strategies",
+                value="draft",
+                detail="lifecycle gated",
+            ),
+            ConsoleMetric(
+                key="portfolios",
+                label="Portfolios",
+                value="paper",
+                detail="live disabled",
+            ),
+            ConsoleMetric(key="risk", label="Risk", value="clear", detail="limits modeled"),
+            ConsoleMetric(key="audit", label="Audit", value="append-only", detail="events tracked"),
+            ConsoleMetric(key="users", label="Users", value="RBAC", detail="tenant scoped"),
+        ],
+        panels=[
+            ConsolePanel(
+                key="data",
+                title="Market data catalog",
+                description=(
+                    "Track free-first adapters, asset coverage, provenance, "
+                    "and entitlement status."
+                ),
+                action="Run ingestion check",
+                rows=[
+                    {
+                        "Source": "Stooq",
+                        "Asset": "Equities/ETFs",
+                        "State": "Ready",
+                        "Provenance": "Required",
+                    },
+                    {
+                        "Source": "CoinGecko",
+                        "Asset": "Crypto",
+                        "State": "Ready",
+                        "Provenance": "Required",
+                    },
+                    {"Source": "ECB FX", "Asset": "FX", "State": "Ready", "Provenance": "Required"},
+                ],
+            ),
+            ConsolePanel(
+                key="experiments",
+                title="Research runs",
+                description=(
+                    "Compare queued and draft experiments before they become "
+                    "strategy candidates."
+                ),
+                action="Create research run",
+                rows=[
+                    {
+                        "Run": "Momentum Baseline",
+                        "Dataset": "US Equities Daily",
+                        "State": "Queued",
+                        "Gate": "No leak checks",
+                    },
+                    {
+                        "Run": "Crypto Trend",
+                        "Dataset": "Crypto Spot Daily",
+                        "State": "Draft",
+                        "Gate": "Needs costs",
+                    },
+                ],
+            ),
+            ConsolePanel(
+                key="strategies",
+                title="Strategy lifecycle",
+                description=(
+                    "Promote strategies through research, paper approval, "
+                    "and live approval gates."
+                ),
+                action="Open promotion queue",
+                rows=[
+                    {
+                        "Strategy": "Cross-Asset Momentum",
+                        "Lifecycle": "Draft",
+                        "Approval": "Two-person",
+                        "Live": "Disabled",
+                    },
+                    {
+                        "Strategy": "Mean Reversion Template",
+                        "Lifecycle": "Draft",
+                        "Approval": "Owner",
+                        "Live": "Disabled",
+                    },
+                ],
+            ),
+            ConsolePanel(
+                key="portfolios",
+                title="Portfolio monitor",
+                description=(
+                    "Watch paper portfolios first; live execution remains "
+                    "blocked by design."
+                ),
+                action="Run reconciliation",
+                rows=[
+                    {
+                        "Portfolio": "Paper Multi-Asset",
+                        "Mode": "Paper",
+                        "Exposure": "$0",
+                        "Reconcile": "Pending",
+                    },
+                    {
+                        "Portfolio": "Live Sandbox",
+                        "Mode": "Live",
+                        "Exposure": "$0",
+                        "Reconcile": "Blocked",
+                    },
+                ],
+            ),
+            ConsolePanel(
+                key="risk",
+                title="Risk controls",
+                description=(
+                    "Centralize kill switches, notional limits, approval modes, "
+                    "and policy state."
+                ),
+                action="Review policies",
+                rows=[
+                    {
+                        "Policy": "Live Kill Switch",
+                        "Status": "On",
+                        "Limit": "All live orders blocked",
+                        "Scope": "Platform",
+                    },
+                    {
+                        "Policy": "Max Notional",
+                        "Status": "Draft",
+                        "Limit": "$0 until configured",
+                        "Scope": "Tenant",
+                    },
+                ],
+            ),
+            ConsolePanel(
+                key="audit",
+                title="Audit history",
+                description=(
+                    "Inspect append-only platform events for governance "
+                    "and reproducibility."
+                ),
+                action="Export audit view",
+                rows=[
+                    {
+                        "Event": "bootstrap.scaffold",
+                        "Actor": "system",
+                        "Target": "workspace",
+                        "Immutability": "Modeled",
+                    },
+                    {
+                        "Event": "ui.navigation.enabled",
+                        "Actor": "system",
+                        "Target": "web",
+                        "Immutability": "Committed",
+                    },
+                ],
+            ),
+            ConsolePanel(
+                key="users",
+                title="Users and workspaces",
+                description=(
+                    "Manage tenant-scoped roles for platform admins, "
+                    "researchers, traders, and viewers."
+                ),
+                action="Invite user",
+                rows=[
+                    {
+                        "User": "Platform Admin",
+                        "Role": context.role,
+                        "Tenant": "default",
+                        "Status": "Active",
+                    },
+                    {
+                        "User": "Researcher",
+                        "Role": "researcher",
+                        "Tenant": "default",
+                        "Status": "Template",
+                    },
+                ],
+            ),
+        ],
+    )
 
 
 api_router.include_router(v1_router)

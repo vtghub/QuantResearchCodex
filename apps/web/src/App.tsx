@@ -1,115 +1,19 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
-  Archive,
-  BarChart3,
   CheckCircle2,
-  Database,
-  FlaskConical,
-  Gauge,
   Lock,
   Play,
-  ShieldCheck,
   SlidersHorizontal,
-  Users
 } from "lucide-react";
 
-type SectionKey =
-  | "data"
-  | "experiments"
-  | "strategies"
-  | "portfolios"
-  | "risk"
-  | "audit"
-  | "users";
-
-type Section = {
-  key: SectionKey;
-  label: string;
-  value: string;
-  detail: string;
-  icon: typeof Database;
-};
-
-const sections: Section[] = [
-  { key: "data", label: "Data Health", value: "3", detail: "adapters ready", icon: Database },
-  { key: "experiments", label: "Experiments", value: "1", detail: "queued run", icon: FlaskConical },
-  { key: "strategies", label: "Strategies", value: "draft", detail: "lifecycle gated", icon: BarChart3 },
-  { key: "portfolios", label: "Portfolios", value: "paper", detail: "live disabled", icon: Gauge },
-  { key: "risk", label: "Risk", value: "clear", detail: "limits modeled", icon: ShieldCheck },
-  { key: "audit", label: "Audit", value: "append-only", detail: "events tracked", icon: Archive },
-  { key: "users", label: "Users", value: "RBAC", detail: "tenant scoped", icon: Users }
-];
-
-const tableRows: Record<SectionKey, Array<Record<string, string>>> = {
-  data: [
-    { Source: "Stooq", Asset: "Equities/ETFs", State: "Ready", Provenance: "Required" },
-    { Source: "CoinGecko", Asset: "Crypto", State: "Ready", Provenance: "Required" },
-    { Source: "ECB FX", Asset: "FX", State: "Ready", Provenance: "Required" }
-  ],
-  experiments: [
-    { Run: "Momentum Baseline", Dataset: "US Equities Daily", State: "Queued", Gate: "No leak checks" },
-    { Run: "Crypto Trend", Dataset: "Crypto Spot Daily", State: "Draft", Gate: "Needs costs" }
-  ],
-  strategies: [
-    { Strategy: "Cross-Asset Momentum", Lifecycle: "Draft", Approval: "Two-person", Live: "Disabled" },
-    { Strategy: "Mean Reversion Template", Lifecycle: "Draft", Approval: "Owner", Live: "Disabled" }
-  ],
-  portfolios: [
-    { Portfolio: "Paper Multi-Asset", Mode: "Paper", Exposure: "$0", Reconcile: "Pending" },
-    { Portfolio: "Live Sandbox", Mode: "Live", Exposure: "$0", Reconcile: "Blocked" }
-  ],
-  risk: [
-    { Policy: "Live Kill Switch", Status: "On", Limit: "All live orders blocked", Scope: "Platform" },
-    { Policy: "Max Notional", Status: "Draft", Limit: "$0 until configured", Scope: "Tenant" }
-  ],
-  audit: [
-    { Event: "bootstrap.scaffold", Actor: "system", Target: "workspace", Immutability: "Modeled" },
-    { Event: "ui.navigation.enabled", Actor: "system", Target: "web", Immutability: "Pending commit" }
-  ],
-  users: [
-    { User: "Platform Admin", Role: "platform_admin", Tenant: "default", Status: "Active" },
-    { User: "Researcher", Role: "researcher", Tenant: "default", Status: "Template" }
-  ]
-};
-
-const sectionCopy: Record<SectionKey, { title: string; description: string; action: string }> = {
-  data: {
-    title: "Market data catalog",
-    description: "Track free-first adapters, asset coverage, provenance, and entitlement status.",
-    action: "Run ingestion check"
-  },
-  experiments: {
-    title: "Research runs",
-    description: "Compare queued and draft experiments before they become strategy candidates.",
-    action: "Create research run"
-  },
-  strategies: {
-    title: "Strategy lifecycle",
-    description: "Promote strategies through research, paper approval, and live approval gates.",
-    action: "Open promotion queue"
-  },
-  portfolios: {
-    title: "Portfolio monitor",
-    description: "Watch paper portfolios first; live execution remains blocked by design.",
-    action: "Run reconciliation"
-  },
-  risk: {
-    title: "Risk controls",
-    description: "Centralize kill switches, notional limits, approval modes, and policy state.",
-    action: "Review policies"
-  },
-  audit: {
-    title: "Audit history",
-    description: "Inspect append-only platform events for governance and reproducibility.",
-    action: "Export audit view"
-  },
-  users: {
-    title: "Users and workspaces",
-    description: "Manage tenant-scoped roles for platform admins, researchers, traders, and viewers.",
-    action: "Invite user"
-  }
-};
+import { fetchConsolePayload } from "./apiClient";
+import {
+  fallbackConsolePayload,
+  sectionIcons,
+  type ConsolePayload,
+  type SectionKey
+} from "./consoleData";
 
 function DataTable({ rows }: { rows: Array<Record<string, string>> }) {
   const columns = Object.keys(rows[0] ?? {});
@@ -140,12 +44,34 @@ function DataTable({ rows }: { rows: Array<Record<string, string>> }) {
 
 export function App() {
   const [activeKey, setActiveKey] = useState<SectionKey>("data");
-  const activeSection = useMemo(
-    () => sections.find((section) => section.key === activeKey) ?? sections[0],
-    [activeKey]
+  const [consolePayload, setConsolePayload] = useState<ConsolePayload>(fallbackConsolePayload);
+  const [dataSource, setDataSource] = useState<"api" | "fallback">("fallback");
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    fetchConsolePayload(controller.signal)
+      .then((payload) => {
+        setConsolePayload(payload);
+        setDataSource("api");
+      })
+      .catch(() => {
+        setConsolePayload(fallbackConsolePayload);
+        setDataSource("fallback");
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  const activeMetric = useMemo(
+    () => consolePayload.metrics.find((metric) => metric.key === activeKey) ?? consolePayload.metrics[0],
+    [activeKey, consolePayload.metrics]
   );
-  const ActiveIcon = activeSection.icon;
-  const activeCopy = sectionCopy[activeKey];
+  const activePanel = useMemo(
+    () => consolePayload.panels.find((panel) => panel.key === activeKey) ?? consolePayload.panels[0],
+    [activeKey, consolePayload.panels]
+  );
+  const ActiveIcon = sectionIcons[activeMetric.key];
 
   return (
     <main className="app-shell">
@@ -155,7 +81,9 @@ export function App() {
           <span>QuantResearchCodex</span>
         </div>
         <nav aria-label="Primary">
-          {sections.map((section) => (
+          {consolePayload.metrics.map((section) => {
+            const SectionIcon = sectionIcons[section.key];
+            return (
             <button
               aria-current={section.key === activeKey ? "page" : undefined}
               key={section.key}
@@ -163,10 +91,11 @@ export function App() {
               title={section.detail}
               type="button"
             >
-              <section.icon aria-hidden="true" />
+              <SectionIcon aria-hidden="true" />
               <span>{section.label}</span>
             </button>
-          ))}
+            );
+          })}
         </nav>
       </aside>
 
@@ -183,21 +112,24 @@ export function App() {
         </header>
 
         <section className="metric-grid" aria-label="Platform status">
-          {sections.map((section) => (
+          {consolePayload.metrics.map((section) => {
+            const SectionIcon = sectionIcons[section.key];
+            return (
             <button
               className="metric-card"
               key={section.key}
               onClick={() => setActiveKey(section.key)}
               type="button"
             >
-              <section.icon aria-hidden="true" />
+              <SectionIcon aria-hidden="true" />
               <div>
                 <span>{section.label}</span>
                 <strong>{section.value}</strong>
                 <p>{section.detail}</p>
               </div>
             </button>
-          ))}
+            );
+          })}
         </section>
 
         <section className="panel" aria-labelledby="active-panel-title">
@@ -205,28 +137,28 @@ export function App() {
             <div className="panel-title">
               <ActiveIcon aria-hidden="true" />
               <div>
-                <p>{activeSection.label}</p>
-                <h2 id="active-panel-title">{activeCopy.title}</h2>
+                <p>{activeMetric.label}</p>
+                <h2 id="active-panel-title">{activePanel.title}</h2>
               </div>
             </div>
             <div className="panel-actions">
               <button type="button" title="Adjust filters">
                 <SlidersHorizontal aria-hidden="true" />
               </button>
-              <button type="button" title={activeCopy.action}>
+              <button type="button" title={activePanel.action}>
                 <Play aria-hidden="true" />
               </button>
             </div>
           </div>
 
-          <p className="panel-description">{activeCopy.description}</p>
-          <DataTable rows={tableRows[activeKey]} />
+          <p className="panel-description">{activePanel.description}</p>
+          <DataTable rows={activePanel.rows} />
         </section>
 
         <section className="operations-band">
           <div>
             <h2>Current workspace</h2>
-            <p>Default Research Workspace</p>
+            <p>{consolePayload.workspace_name}</p>
           </div>
           <div>
             <h2>Next gated milestone</h2>
@@ -236,7 +168,13 @@ export function App() {
             <h2>Verification state</h2>
             <p>
               <CheckCircle2 aria-hidden="true" />
-              Web navigation is local state; backend persistence comes next.
+              {consolePayload.verification_state}
+            </p>
+          </div>
+          <div>
+            <h2>Data source</h2>
+            <p className={dataSource === "api" ? "source-api" : "source-fallback"}>
+              {dataSource === "api" ? "FastAPI console endpoint" : "Static fallback mode"}
             </p>
           </div>
         </section>

@@ -37,3 +37,13 @@ def test_strategy_list_is_lifecycle_scaffolded() -> None:
     assert response.status_code == 200
     assert response.json()[0]["lifecycle"] == "draft"
     assert response.json()[0]["live_enabled"] is False
+
+
+def test_console_endpoint_returns_metrics_and_panels() -> None:
+    response = client.get("/api/v1/console")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["workspace_name"] == "Default Research Workspace"
+    assert body["metrics"][0]["key"] == "data"
+    assert body["panels"][0]["title"] == "Market data catalog"

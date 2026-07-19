@@ -57,3 +57,25 @@ class AuditRecord(BaseModel):
     target_id: UUID
     occurred_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     immutable: bool = True
+
+
+class ConsoleMetric(BaseModel):
+    key: str
+    label: str
+    value: str
+    detail: str
+
+
+class ConsolePanel(BaseModel):
+    key: str
+    title: str
+    description: str
+    action: str
+    rows: list[dict[str, str]]
+
+
+class ConsoleResponse(BaseModel):
+    metrics: list[ConsoleMetric]
+    panels: list[ConsolePanel]
+    workspace_name: str = "Default Research Workspace"
+    verification_state: str = "API-backed console data loaded."
