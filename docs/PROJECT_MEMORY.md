@@ -4,11 +4,12 @@
 
 - Repository began empty on `main`.
 - Git remote `origin` is `https://github.com/vtghub/QuantResearchCodex`.
-- Implementation work is on `feature/api-backed-console`.
+- Implementation work is on `feature/database-foundation`.
 - The approved Terra plan is in `docs/IMPLEMENTATION_PLAN.md`.
 - First scaffold milestone has been implemented and locally verified.
 - The first web UI navigation feature slice is implemented and locally verified.
 - API-backed console hydration is implemented and locally verified.
+- Database model and Alembic migration foundation is implemented and locally verified.
 
 ## Locked Decisions
 
@@ -38,7 +39,7 @@
 
 ## Next Milestone
 
-- Add database models, Alembic migrations, generated OpenAPI client, and Compose integration tests.
+- Add generated OpenAPI client and Compose integration tests.
 
 ## Change Log
 
@@ -49,3 +50,4 @@
 - 2026-07-18: Added pnpm v11 `allowBuilds` policy for `esbuild` in `pnpm-workspace.yaml`.
 - 2026-07-18: Implemented web navigation console so sidebar and status cards switch real panels instead of acting as stubs.
 - 2026-07-18: Implemented API-backed console feature with `/api/v1/console`, typed web client, static fallback mode, and browser/unit/API coverage.
+- 2026-07-18: Implemented database foundation with tenant-aware SQLAlchemy models, Alembic async migration config, initial schema migration, metadata tests, and offline SQL migration validation.
