@@ -237,6 +237,19 @@ def build_job_store(
 
 
 def run_research_job(payload: dict[str, Any]) -> dict[str, Any]:
+    if payload.get("use_case") == "equity_etf_live_research":
+        from quantresearch_api.equity_etf_research import equity_etf_research_service
+        from quantresearch_api.schemas import EquityEtfResearchRequest, TenantContext
+        from quantresearch_api.security import DEFAULT_TENANT_ID, DEFAULT_WORKSPACE_ID
+
+        request = EquityEtfResearchRequest.model_validate(payload)
+        context = TenantContext(
+            tenant_id=payload.get("tenant_id") or DEFAULT_TENANT_ID,
+            workspace_id=payload.get("workspace_id") or DEFAULT_WORKSPACE_ID,
+            role="researcher",
+        )
+        return equity_etf_research_service.run(request, context).model_dump(mode="json")
+
     prices = [float(value) for value in payload.get("prices", [100, 101, 103, 102, 105, 107])]
     fast_window = int(payload.get("fast_window", 2))
     slow_window = int(payload.get("slow_window", 3))

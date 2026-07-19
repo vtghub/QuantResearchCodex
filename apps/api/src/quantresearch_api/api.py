@@ -2,10 +2,12 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
+from quantresearch_adapters.market_data import OnlineDataUnavailableError
 
 from quantresearch_api.auth import auth_service, issue_token
 from quantresearch_api.brokers import BrokerSandboxGateError, broker_sandbox_service
 from quantresearch_api.catalog import catalog_service
+from quantresearch_api.equity_etf_research import equity_etf_research_service
 from quantresearch_api.jobs import JobKind, JobRecord, JobStateSummary, job_queue
 from quantresearch_api.risk import RiskGateError, risk_control_service
 from quantresearch_api.schemas import (
@@ -27,6 +29,8 @@ from quantresearch_api.schemas import (
     DatasetStorageManifest,
     EnqueueIngestionRequest,
     EnqueueResearchRequest,
+    EquityEtfResearchRequest,
+    EquityEtfResearchResponse,
     HealthResponse,
     KillSwitchRequest,
     KillSwitchState,
@@ -199,6 +203,22 @@ async def research_runs(context: ReadTenantDep) -> list[ResourceSummary]:
             "queued",
         )
     ]
+
+
+@v1_router.post(
+    "/research/use-cases/equity-etf/live-run",
+    response_model=EquityEtfResearchResponse,
+)
+async def run_equity_etf_live_research(
+    request: EquityEtfResearchRequest,
+    context: ResearchTenantDep,
+) -> EquityEtfResearchResponse:
+    try:
+        return equity_etf_research_service.run(request, context)
+    except OnlineDataUnavailableError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @v1_router.get("/strategies", response_model=list[StrategySummary])
@@ -584,12 +604,15 @@ async def enqueue_research(
     request: EnqueueResearchRequest,
     context: ResearchTenantDep,
 ) -> JobRecord:
+    payload = request.model_dump()
+    payload["tenant_id"] = str(context.tenant_id)
+    payload["workspace_id"] = str(context.workspace_id)
     return job_queue.enqueue(
         JobRecord(
             kind=JobKind.RUN_RESEARCH,
             tenant_id=str(context.tenant_id),
             workspace_id=str(context.workspace_id),
-            payload=request.model_dump(),
+            payload=payload,
         )
     )
 

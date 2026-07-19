@@ -821,6 +821,201 @@
         "title": "EnqueueResearchRequest",
         "type": "object"
       },
+      "EquityEtfResearchRequest": {
+        "properties": {
+          "end": {
+            "default": "20241231",
+            "pattern": "^\\d{8}$",
+            "title": "End",
+            "type": "string"
+          },
+          "fast_window": {
+            "default": 20,
+            "exclusiveMinimum": 0.0,
+            "title": "Fast Window",
+            "type": "integer"
+          },
+          "fee_bps": {
+            "default": 1.0,
+            "minimum": 0.0,
+            "title": "Fee Bps",
+            "type": "number"
+          },
+          "slippage_bps": {
+            "default": 1.0,
+            "minimum": 0.0,
+            "title": "Slippage Bps",
+            "type": "number"
+          },
+          "slow_window": {
+            "default": 50,
+            "exclusiveMinimum": 0.0,
+            "title": "Slow Window",
+            "type": "integer"
+          },
+          "start": {
+            "default": "20240101",
+            "pattern": "^\\d{8}$",
+            "title": "Start",
+            "type": "string"
+          },
+          "symbols": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Symbols",
+            "type": "array"
+          }
+        },
+        "title": "EquityEtfResearchRequest",
+        "type": "object"
+      },
+      "EquityEtfResearchResponse": {
+        "properties": {
+          "allocations": {
+            "items": {
+              "$ref": "#/components/schemas/PortfolioAllocation"
+            },
+            "title": "Allocations",
+            "type": "array"
+          },
+          "asset_class": {
+            "title": "Asset Class",
+            "type": "string"
+          },
+          "cash_weight": {
+            "title": "Cash Weight",
+            "type": "number"
+          },
+          "data_vendors": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Data Vendors",
+            "type": "array"
+          },
+          "dataset_checksum": {
+            "title": "Dataset Checksum",
+            "type": "string"
+          },
+          "mining_summary": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Mining Summary",
+            "type": "object"
+          },
+          "symbols": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Symbols",
+            "type": "array"
+          },
+          "symbols_result": {
+            "items": {
+              "$ref": "#/components/schemas/EquityEtfSymbolResult"
+            },
+            "title": "Symbols Result",
+            "type": "array"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "workspace_id",
+          "asset_class",
+          "data_vendors",
+          "symbols",
+          "dataset_checksum",
+          "mining_summary",
+          "symbols_result",
+          "allocations",
+          "cash_weight"
+        ],
+        "title": "EquityEtfResearchResponse",
+        "type": "object"
+      },
+      "EquityEtfSymbolResult": {
+        "properties": {
+          "annualized_return": {
+            "title": "Annualized Return",
+            "type": "number"
+          },
+          "annualized_volatility": {
+            "title": "Annualized Volatility",
+            "type": "number"
+          },
+          "bar_count": {
+            "title": "Bar Count",
+            "type": "integer"
+          },
+          "latest_close": {
+            "title": "Latest Close",
+            "type": "number"
+          },
+          "latest_signal": {
+            "title": "Latest Signal",
+            "type": "number"
+          },
+          "max_drawdown": {
+            "title": "Max Drawdown",
+            "type": "number"
+          },
+          "sharpe": {
+            "title": "Sharpe",
+            "type": "number"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "total_return": {
+            "title": "Total Return",
+            "type": "number"
+          },
+          "turnover": {
+            "title": "Turnover",
+            "type": "number"
+          },
+          "vendor": {
+            "title": "Vendor",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "vendor",
+          "bar_count",
+          "latest_close",
+          "latest_signal",
+          "total_return",
+          "annualized_return",
+          "annualized_volatility",
+          "sharpe",
+          "max_drawdown",
+          "turnover"
+        ],
+        "title": "EquityEtfSymbolResult",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1096,6 +1291,39 @@
           "jobs"
         ],
         "title": "OpsMetricsResponse",
+        "type": "object"
+      },
+      "PortfolioAllocation": {
+        "properties": {
+          "momentum_score": {
+            "title": "Momentum Score",
+            "type": "number"
+          },
+          "signal": {
+            "title": "Signal",
+            "type": "number"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "volatility": {
+            "title": "Volatility",
+            "type": "number"
+          },
+          "weight": {
+            "title": "Weight",
+            "type": "number"
+          }
+        },
+        "required": [
+          "symbol",
+          "weight",
+          "signal",
+          "momentum_score",
+          "volatility"
+        ],
+        "title": "PortfolioAllocation",
         "type": "object"
       },
       "RegisterUserRequest": {
@@ -3281,6 +3509,95 @@
           }
         ],
         "summary": "Research Runs"
+      }
+    },
+    "/api/v1/research/use-cases/equity-etf/live-run": {
+      "post": {
+        "operationId": "run_equity_etf_live_research_api_v1_research_use_cases_equity_etf_live_run_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-tenant-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Tenant-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-role",
+            "required": false,
+            "schema": {
+              "default": "platform_admin",
+              "title": "X-Role",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EquityEtfResearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquityEtfResearchResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Run Equity Etf Live Research"
       }
     },
     "/api/v1/risk/approvals": {

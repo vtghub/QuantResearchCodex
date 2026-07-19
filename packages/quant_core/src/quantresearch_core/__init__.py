@@ -17,6 +17,12 @@ from quantresearch_core.contracts import (
     Strategy,
     StrategyLifecycle,
 )
+from quantresearch_core.portfolio import (
+    PortfolioConstructionResult,
+    PortfolioHolding,
+    annualized_volatility,
+    construct_long_only_momentum_portfolio,
+)
 
 __all__ = [
     "ApprovalMode",
@@ -26,9 +32,13 @@ __all__ = [
     "Broker",
     "BrokerMode",
     "DataProvider",
+    "PortfolioConstructionResult",
+    "PortfolioHolding",
     "RiskPolicy",
     "Strategy",
     "StrategyLifecycle",
+    "annualized_volatility",
+    "construct_long_only_momentum_portfolio",
     "moving_average_signals",
     "returns_from_prices",
     "run_vector_backtest",

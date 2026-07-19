@@ -260,3 +260,48 @@ class AuditExportResponse(BaseModel):
     record_count: int
     records: list[AuditRecord]
     exported_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+
+class EquityEtfResearchRequest(BaseModel):
+    symbols: list[str] = Field(default_factory=lambda: ["SPY", "QQQ", "IWM"], min_length=1)
+    start: str = Field(default="20240101", pattern=r"^\d{8}$")
+    end: str = Field(default="20241231", pattern=r"^\d{8}$")
+    fast_window: int = Field(default=20, gt=0)
+    slow_window: int = Field(default=50, gt=0)
+    fee_bps: float = Field(default=1.0, ge=0)
+    slippage_bps: float = Field(default=1.0, ge=0)
+
+
+class EquityEtfSymbolResult(BaseModel):
+    symbol: str
+    vendor: str
+    bar_count: int
+    latest_close: float
+    latest_signal: float
+    total_return: float
+    annualized_return: float
+    annualized_volatility: float
+    sharpe: float
+    max_drawdown: float
+    turnover: float
+
+
+class PortfolioAllocation(BaseModel):
+    symbol: str
+    weight: float
+    signal: float
+    momentum_score: float
+    volatility: float
+
+
+class EquityEtfResearchResponse(BaseModel):
+    tenant_id: UUID
+    workspace_id: UUID
+    asset_class: str
+    data_vendors: list[str]
+    symbols: list[str]
+    dataset_checksum: str
+    mining_summary: dict[str, str | int]
+    symbols_result: list[EquityEtfSymbolResult]
+    allocations: list[PortfolioAllocation]
+    cash_weight: float
